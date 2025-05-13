@@ -1,0 +1,15 @@
+
+# NetBeans specific files
+nbproject/private/
+nbproject/build-impl.xml
+nbproject/genfiles.properties
+
+# Build output
+build/
+dist/
+
+# Backup / temp files
+*.class
+*.log
+*.bak
+*.tmp
