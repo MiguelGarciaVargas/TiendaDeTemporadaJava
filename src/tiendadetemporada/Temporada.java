@@ -3,6 +3,11 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package tiendadetemporada;
+import javax.swing.table.DefaultTableModel;
+import java.sql.*;
+import javax.swing.JOptionPane;
+import java.awt.Color;
+import javax.swing.SpinnerNumberModel;
 
 /**
  *
@@ -15,6 +20,7 @@ public class Temporada extends javax.swing.JFrame {
      */
     public Temporada() {
         initComponents();
+        cargarTemporadas();
     }
 
     /**
@@ -202,18 +208,47 @@ public class Temporada extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void cargarTemporadas() {
+    try {
+        Connection conexion = Conexion.conectar();
+        String sql = "SELECT * FROM ProductoInfo.Temporada";
+        PreparedStatement stmt = conexion.prepareStatement(sql);
+        ResultSet rs = stmt.executeQuery();
+
+        DefaultTableModel modelo = (DefaultTableModel) TableTemporada.getModel();
+        modelo.setRowCount(0); // Limpiar tabla
+
+        while (rs.next()) {
+            Object[] fila = {
+                rs.getInt("id_temporada"),
+                rs.getString("nombre"),
+                rs.getDate("fecha_inicio"),
+                rs.getDate("fecha_fin")
+            };
+            modelo.addRow(fila);
+        }
+
+        rs.close();
+        stmt.close();
+        conexion.close();
+    } catch (Exception e) {
+        JOptionPane.showMessageDialog(null, "Error al consultar datos de la temporada\n" + e.getMessage());
+    }
+}
+    
+    private void jDateChooserInicioPropertyChange(java.beans.PropertyChangeEvent evt) {
+    if ("date".equals(evt.getPropertyName())) {
+        jDateChooserFin.setMinSelectableDate(jDateChooserInicio.getDate());
+    }
+}
+    
     private void TableTemporadaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_TableTemporadaMouseClicked
         // TODO add your handling code here:
         int fila = TableTemporada.getSelectedRow();
-
         if (fila >= 0) {
             jTextFieldNombre.setText(TableTemporada.getValueAt(fila, 1).toString());
-            Double precio = Double.parseDouble(TableTemporada.getValueAt(fila, 2).toString());
-            jSpinnerPrecio.setValue(precio);
-
-            Integer existencias = Integer.parseInt(TableTemporada.getValueAt(fila, 3).toString());
-            jSpinnerExistencias.setValue(existencias);
-
+            jDateChooserInicio.setDate((Date) TableTemporada.getValueAt(fila, 2));
+            jDateChooserFin.setDate((Date) TableTemporada.getValueAt(fila, 3));
         }
     }//GEN-LAST:event_TableTemporadaMouseClicked
 
@@ -222,70 +257,67 @@ public class Temporada extends javax.swing.JFrame {
     }//GEN-LAST:event_jTextFieldNombreActionPerformed
 
     private void jButtonEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonEliminarActionPerformed
-        // TODO add your handling code here:
         int fila = TableTemporada.getSelectedRow();
-
         if (fila >= 0) {
-            int  index = Integer.parseInt(TableTemporada.getValueAt(fila, 0).toString());
-
-            String sql = "DELETE FROM ProductoInfo.Producto WHERE id_producto = ?";
+            int index = Integer.parseInt(TableTemporada.getValueAt(fila, 0).toString());
+            String sql = "DELETE FROM ProductoInfo.Temporada WHERE id_temporada = ?";
 
             try {
                 Connection conexion = Conexion.conectar();
                 PreparedStatement stmt = conexion.prepareStatement(sql);
-
                 stmt.setInt(1, index);
                 stmt.executeUpdate();
 
-                JOptionPane.showMessageDialog(null, "Eliminación Exitosa", "Éxito", JOptionPane.INFORMATION_MESSAGE);
-
-                cargarProductos();
+                JOptionPane.showMessageDialog(null, "Temporada eliminada exitosamente", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                jTextFieldNombre.setText("");
+                jDateChooserInicio.setDate(null);
+                jDateChooserFin.setDate(null);
+                cargarTemporadas();
 
                 conexion.close();
             } catch (Exception e) {
-                JOptionPane.showMessageDialog(null, "Error al eliminar el producto", "Error de query", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null, "Error al eliminar la temporada", "Error de query", JOptionPane.ERROR_MESSAGE);
             }
         }
     }//GEN-LAST:event_jButtonEliminarActionPerformed
 
     private void jButtonEditarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonEditarActionPerformed
-        // TODO add your handling code here:
-        int fila = TableTemporada.getSelectedRow();
 
+                int fila = TableTemporada.getSelectedRow();
         if (fila >= 0) {
             String nombre = jTextFieldNombre.getText().trim();
-            Double precio = ((Number) jSpinnerPrecio.getValue()).doubleValue();
-            Integer existencias = (Integer) jSpinnerExistencias.getValue();
-            int  index = Integer.parseInt(TableTemporada.getValueAt(fila, 0).toString());
+            java.util.Date fechaInicioUtil = jDateChooserInicio.getDate();
+            java.util.Date fechaFinUtil = jDateChooserFin.getDate();
+            int index = Integer.parseInt(TableTemporada.getValueAt(fila, 0).toString());
 
-            if(nombre.isEmpty()){
-                JOptionPane.showMessageDialog(null, "El nombre está vacío", "Error de formulario", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            if(precio <= 0){
-                JOptionPane.showMessageDialog(null, "El precio no es válido", "Error de formulario", JOptionPane.ERROR_MESSAGE);
+            if (nombre.isEmpty() || fechaInicioUtil == null || fechaFinUtil == null) {
+                JOptionPane.showMessageDialog(null, "Llene todos los campos", "Error de formulario", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
-            String sql = "UPDATE ProductoInfo.Producto SET nombre_producto = ?, precio_producto = ?, existencias = ? WHERE id_producto = ?";
+            java.sql.Date fechaInicio = new java.sql.Date(fechaInicioUtil.getTime());
+            java.sql.Date fechaFin = new java.sql.Date(fechaFinUtil.getTime());
+
+            String sql = "UPDATE ProductoInfo.Temporada SET nombre = ?, fecha_inicio = ?, fecha_fin = ? WHERE id_temporada = ?";
 
             try {
                 Connection conexion = Conexion.conectar();
                 PreparedStatement stmt = conexion.prepareStatement(sql);
-
                 stmt.setString(1, nombre);
-                stmt.setDouble(2, precio);
-                stmt.setInt(3, existencias);
+                stmt.setDate(2, fechaInicio);
+                stmt.setDate(3, fechaFin);
                 stmt.setInt(4, index);
                 stmt.executeUpdate();
 
-                JOptionPane.showMessageDialog(null, "Actualización Exitosa", "Éxito", JOptionPane.INFORMATION_MESSAGE);
-
-                cargarProductos();
+                JOptionPane.showMessageDialog(null, "Temporada actualizada exitosamente", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                jTextFieldNombre.setText("");
+                jDateChooserInicio.setDate(null);
+                jDateChooserFin.setDate(null);
+                cargarTemporadas();
 
                 conexion.close();
             } catch (Exception e) {
-                JOptionPane.showMessageDialog(null, "Error al actualizar el producto", "Error de query", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null, "Error al actualizar la temporada", "Error de query", JOptionPane.ERROR_MESSAGE);
             }
         }
     }//GEN-LAST:event_jButtonEditarActionPerformed
@@ -295,35 +327,40 @@ public class Temporada extends javax.swing.JFrame {
     }//GEN-LAST:event_jButtonAgregarMouseClicked
 
     private void jButtonAgregarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonAgregarActionPerformed
-        // TODO add your handling code here:
-        String nombre = jTextFieldNombre.getText().trim();
-        Double precio = ((Number) jSpinnerPrecio.getValue()).doubleValue();
-        Integer existencias = (Integer) jSpinnerExistencias.getValue();
 
-        if(nombre.isEmpty() || precio == 0){
+        String nombre = jTextFieldNombre.getText().trim();
+        java.util.Date fechaInicioUtil = jDateChooserInicio.getDate();
+        java.util.Date fechaFinUtil = jDateChooserFin.getDate();
+
+        if (nombre.isEmpty() || fechaInicioUtil == null || fechaFinUtil == null) {
             JOptionPane.showMessageDialog(null, "Llene todos los campos", "Error de formulario", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
-        String sql = "INSERT INTO ProductoInfo.Producto (nombre_producto, precio_producto, existencias) VALUES (?, ?, ?)";
+        java.sql.Date fechaInicio = new java.sql.Date(fechaInicioUtil.getTime());
+        java.sql.Date fechaFin = new java.sql.Date(fechaFinUtil.getTime());
+
+        String sql = "INSERT INTO ProductoInfo.Temporada (nombre, fecha_inicio, fecha_fin) VALUES (?, ?, ?)";
 
         try {
             Connection conexion = Conexion.conectar();
             PreparedStatement stmt = conexion.prepareStatement(sql);
-
             stmt.setString(1, nombre);
-            stmt.setDouble(2, precio);
-            stmt.setInt(3, existencias);
+            stmt.setDate(2, fechaInicio);
+            stmt.setDate(3, fechaFin);
             stmt.executeUpdate();
 
-            JOptionPane.showMessageDialog(null, "Insersión Exitosa", "Éxito", JOptionPane.INFORMATION_MESSAGE);
-
-            cargarProductos();
+            JOptionPane.showMessageDialog(null, "Temporada agregada exitosamente", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+            jTextFieldNombre.setText("");
+            jDateChooserInicio.setDate(null);
+            jDateChooserFin.setDate(null);
+            cargarTemporadas();
 
             conexion.close();
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "Error al insertar el producto", "Error de query", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Error al insertar la temporada", "Error de query", JOptionPane.ERROR_MESSAGE);
         }
+
     }//GEN-LAST:event_jButtonAgregarActionPerformed
 
     /**

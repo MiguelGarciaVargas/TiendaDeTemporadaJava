@@ -4,15 +4,15 @@
  */
 package tiendadetemporada;
 
-/**
- *
- * @author MONSE
- */
+import javax.swing.JOptionPane;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+
+
 public class Cliente extends javax.swing.JFrame {
 
-    /**
-     * Creates new form Cliente
-     */
+
     public Cliente() {
         initComponents();
     }
@@ -28,7 +28,7 @@ public class Cliente extends javax.swing.JFrame {
 
         jButtonEditar = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTableProductos = new javax.swing.JTable();
+        jTableCliente = new javax.swing.JTable();
         jLabel1 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
@@ -52,8 +52,8 @@ public class Cliente extends javax.swing.JFrame {
             }
         });
 
-        jTableProductos.setFont(new java.awt.Font("Century Gothic", 1, 18)); // NOI18N
-        jTableProductos.setModel(new javax.swing.table.DefaultTableModel(
+        jTableCliente.setFont(new java.awt.Font("Century Gothic", 1, 18)); // NOI18N
+        jTableCliente.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null},
                 {null, null, null, null},
@@ -79,14 +79,14 @@ public class Cliente extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
-        jTableProductos.setColumnSelectionAllowed(true);
-        jTableProductos.setGridColor(new java.awt.Color(255, 255, 255));
-        jTableProductos.addMouseListener(new java.awt.event.MouseAdapter() {
+        jTableCliente.setColumnSelectionAllowed(true);
+        jTableCliente.setGridColor(new java.awt.Color(255, 255, 255));
+        jTableCliente.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                jTableProductosMouseClicked(evt);
+                jTableClienteMouseClicked(evt);
             }
         });
-        jScrollPane1.setViewportView(jTableProductos);
+        jScrollPane1.setViewportView(jTableCliente);
 
         jLabel1.setFont(new java.awt.Font("Century Gothic", 1, 38)); // NOI18N
         jLabel1.setForeground(new java.awt.Color(0, 51, 153));
@@ -204,15 +204,23 @@ public class Cliente extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void cargarClientes() {
+
+        
+}
+    
+    
+    
+    
     private void jButtonEditarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonEditarActionPerformed
         // TODO add your handling code here:
-        int fila = jTableProductos.getSelectedRow();
+        int fila = jTableCliente.getSelectedRow();
 
         if (fila >= 0) {
             String nombre = jTextFieldNombre.getText().trim();
             Double precio = ((Number) jSpinnerPrecio.getValue()).doubleValue();
             Integer existencias = (Integer) jSpinnerExistencias.getValue();
-            int  index = Integer.parseInt(jTableProductos.getValueAt(fila, 0).toString());
+            int  index = Integer.parseInt(jTableCliente.getValueAt(fila, 0).toString());
 
             if(nombre.isEmpty()){
                 JOptionPane.showMessageDialog(null, "El nombre está vacío", "Error de formulario", JOptionPane.ERROR_MESSAGE);
@@ -237,7 +245,7 @@ public class Cliente extends javax.swing.JFrame {
 
                 JOptionPane.showMessageDialog(null, "Actualización Exitosa", "Éxito", JOptionPane.INFORMATION_MESSAGE);
 
-                cargarProductos();
+
 
                 conexion.close();
             } catch (Exception e) {
@@ -246,20 +254,20 @@ public class Cliente extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_jButtonEditarActionPerformed
 
-    private void jTableProductosMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTableProductosMouseClicked
+    private void jTableClienteMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTableClienteMouseClicked
         // TODO add your handling code here:
-        int fila = jTableProductos.getSelectedRow();
+        int fila = jTableCliente.getSelectedRow();
 
         if (fila >= 0) {
-            jTextFieldNombre.setText(jTableProductos.getValueAt(fila, 1).toString());
-            Double precio = Double.parseDouble(jTableProductos.getValueAt(fila, 2).toString());
+            jTextFieldNombre.setText(jTableCliente.getValueAt(fila, 1).toString());
+            Double precio = Double.parseDouble(jTableCliente.getValueAt(fila, 2).toString());
             jSpinnerPrecio.setValue(precio);
 
-            Integer existencias = Integer.parseInt(jTableProductos.getValueAt(fila, 3).toString());
+            Integer existencias = Integer.parseInt(jTableCliente.getValueAt(fila, 3).toString());
             jSpinnerExistencias.setValue(existencias);
 
         }
-    }//GEN-LAST:event_jTableProductosMouseClicked
+    }//GEN-LAST:event_jTableClienteMouseClicked
 
     private void jTextFieldNombreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextFieldNombreActionPerformed
         // TODO add your handling code here:
@@ -267,10 +275,10 @@ public class Cliente extends javax.swing.JFrame {
 
     private void jButtonEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonEliminarActionPerformed
         // TODO add your handling code here:
-        int fila = jTableProductos.getSelectedRow();
+        int fila = jTableCliente.getSelectedRow();
 
         if (fila >= 0) {
-            int  index = Integer.parseInt(jTableProductos.getValueAt(fila, 0).toString());
+            int  index = Integer.parseInt(jTableCliente.getValueAt(fila, 0).toString());
 
             String sql = "DELETE FROM ProductoInfo.Producto WHERE id_producto = ?";
 
@@ -283,7 +291,7 @@ public class Cliente extends javax.swing.JFrame {
 
                 JOptionPane.showMessageDialog(null, "Eliminación Exitosa", "Éxito", JOptionPane.INFORMATION_MESSAGE);
 
-                cargarProductos();
+
 
                 conexion.close();
             } catch (Exception e) {
@@ -320,7 +328,6 @@ public class Cliente extends javax.swing.JFrame {
 
             JOptionPane.showMessageDialog(null, "Insersión Exitosa", "Éxito", JOptionPane.INFORMATION_MESSAGE);
 
-            cargarProductos();
 
             conexion.close();
         } catch (Exception e) {
@@ -374,7 +381,7 @@ public class Cliente extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSpinner jSpinnerExistencias;
     private javax.swing.JSpinner jSpinnerPrecio;
-    private javax.swing.JTable jTableProductos;
+    private javax.swing.JTable jTableCliente;
     private javax.swing.JTextField jTextFieldNombre;
     // End of variables declaration//GEN-END:variables
 }

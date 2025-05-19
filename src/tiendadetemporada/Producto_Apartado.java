@@ -214,72 +214,11 @@ public class Producto_Apartado extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButtonEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonEliminarActionPerformed
-        // TODO add your handling code here:
-        int fila = TableApartado.getSelectedRow();
-
-        if (fila >= 0) {
-            int  index = Integer.parseInt(TableApartado.getValueAt(fila, 0).toString());
-
-            String sql = "DELETE FROM ProductoInfo.Producto WHERE id_producto = ?";
-
-            try {
-                Connection conexion = Conexion.conectar();
-                PreparedStatement stmt = conexion.prepareStatement(sql);
-
-                stmt.setInt(1, index);
-                stmt.executeUpdate();
-
-                JOptionPane.showMessageDialog(null, "Eliminación Exitosa", "Éxito", JOptionPane.INFORMATION_MESSAGE);
-
-                cargarProductos();
-
-                conexion.close();
-            } catch (Exception e) {
-                JOptionPane.showMessageDialog(null, "Error al eliminar el producto", "Error de query", JOptionPane.ERROR_MESSAGE);
-            }
-        }
+      
     }//GEN-LAST:event_jButtonEliminarActionPerformed
 
     private void jButtonEditarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonEditarActionPerformed
-        // TODO add your handling code here:
-        int fila = TableApartado.getSelectedRow();
-
-        if (fila >= 0) {
-            String nombre = jTextFieldNombre.getText().trim();
-            Double precio = ((Number) jSpinnerPrecio.getValue()).doubleValue();
-            Integer existencias = (Integer) jSpinnerCantidad.getValue();
-            int  index = Integer.parseInt(TableApartado.getValueAt(fila, 0).toString());
-
-            if(nombre.isEmpty()){
-                JOptionPane.showMessageDialog(null, "El nombre está vacío", "Error de formulario", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            if(precio <= 0){
-                JOptionPane.showMessageDialog(null, "El precio no es válido", "Error de formulario", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            String sql = "UPDATE ProductoInfo.Producto SET nombre_producto = ?, precio_producto = ?, existencias = ? WHERE id_producto = ?";
-
-            try {
-                Connection conexion = Conexion.conectar();
-                PreparedStatement stmt = conexion.prepareStatement(sql);
-
-                stmt.setString(1, nombre);
-                stmt.setDouble(2, precio);
-                stmt.setInt(3, existencias);
-                stmt.setInt(4, index);
-                stmt.executeUpdate();
-
-                JOptionPane.showMessageDialog(null, "Actualización Exitosa", "Éxito", JOptionPane.INFORMATION_MESSAGE);
-
-                cargarProductos();
-
-                conexion.close();
-            } catch (Exception e) {
-                JOptionPane.showMessageDialog(null, "Error al actualizar el producto", "Error de query", JOptionPane.ERROR_MESSAGE);
-            }
-        }
+        
     }//GEN-LAST:event_jButtonEditarActionPerformed
 
     private void jButtonAgregarMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jButtonAgregarMouseClicked
@@ -287,50 +226,11 @@ public class Producto_Apartado extends javax.swing.JFrame {
     }//GEN-LAST:event_jButtonAgregarMouseClicked
 
     private void jButtonAgregarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonAgregarActionPerformed
-        // TODO add your handling code here:
-        String nombre = jTextFieldNombre.getText().trim();
-        Double precio = ((Number) jSpinnerPrecio.getValue()).doubleValue();
-        Integer existencias = (Integer) jSpinnerCantidad.getValue();
-
-        if(nombre.isEmpty() || precio == 0){
-            JOptionPane.showMessageDialog(null, "Llene todos los campos", "Error de formulario", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        String sql = "INSERT INTO ProductoInfo.Producto (nombre_producto, precio_producto, existencias) VALUES (?, ?, ?)";
-
-        try {
-            Connection conexion = Conexion.conectar();
-            PreparedStatement stmt = conexion.prepareStatement(sql);
-
-            stmt.setString(1, nombre);
-            stmt.setDouble(2, precio);
-            stmt.setInt(3, existencias);
-            stmt.executeUpdate();
-
-            JOptionPane.showMessageDialog(null, "Insersión Exitosa", "Éxito", JOptionPane.INFORMATION_MESSAGE);
-
-            cargarProductos();
-
-            conexion.close();
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "Error al insertar el producto", "Error de query", JOptionPane.ERROR_MESSAGE);
-        }
+        
     }//GEN-LAST:event_jButtonAgregarActionPerformed
 
     private void TableApartadoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_TableApartadoMouseClicked
-        // TODO add your handling code here:
-        int fila = TableApartado.getSelectedRow();
-
-        if (fila >= 0) {
-            jTextFieldNombre.setText(TableApartado.getValueAt(fila, 1).toString());
-            Double precio = Double.parseDouble(TableApartado.getValueAt(fila, 2).toString());
-            jSpinnerPrecio.setValue(precio);
-
-            Integer existencias = Integer.parseInt(TableApartado.getValueAt(fila, 3).toString());
-            jSpinnerCantidad.setValue(existencias);
-
-        }
+      
     }//GEN-LAST:event_TableApartadoMouseClicked
 
     private void jComboBoxProductoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBoxProductoActionPerformed
