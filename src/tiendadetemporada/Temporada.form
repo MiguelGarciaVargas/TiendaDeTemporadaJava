@@ -33,13 +33,13 @@
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jLabel5" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="jDateChooserInicio" alignment="0" min="-2" pref="115" max="-2" attributes="0"/>
+                          <Component id="jLabel5" min="-2" max="-2" attributes="0"/>
+                          <Component id="jDateChooserInicio" min="-2" pref="171" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="-2" pref="74" max="-2" attributes="0"/>
+                      <EmptySpace type="separate" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jDateChooserFin" min="-2" pref="115" max="-2" attributes="0"/>
                           <Component id="jLabel4" min="-2" max="-2" attributes="0"/>
+                          <Component id="jDateChooserFin" min="-2" pref="168" max="-2" attributes="0"/>
                       </Group>
                   </Group>
                   <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
@@ -89,8 +89,8 @@
                   <Component id="jButtonEditar" alignment="3" min="-2" pref="45" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" pref="53" max="-2" attributes="0"/>
-              <Component id="jScrollPane1" min="-2" pref="99" max="-2" attributes="0"/>
-              <EmptySpace pref="96" max="32767" attributes="0"/>
+              <Component id="jScrollPane1" min="-2" pref="154" max="-2" attributes="0"/>
+              <EmptySpace pref="41" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -110,7 +110,7 @@
             </Property>
             <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
               <Table columnCount="4" rowCount="4">
-                <Column editable="false" title="Id Temprada" type="java.lang.Integer"/>
+                <Column editable="false" title="Id Temporada" type="java.lang.Integer"/>
                 <Column editable="false" title="Nombre" type="java.lang.String"/>
                 <Column editable="false" title="Fecha Inicio" type="java.lang.String"/>
                 <Column editable="false" title="Fecha Fin" type="java.lang.String"/>

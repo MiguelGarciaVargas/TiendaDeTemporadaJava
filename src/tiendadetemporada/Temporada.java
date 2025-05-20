@@ -3,6 +3,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package tiendadetemporada;
+
 import javax.swing.table.DefaultTableModel;
 import java.sql.*;
 import javax.swing.JOptionPane;
@@ -21,6 +22,14 @@ public class Temporada extends javax.swing.JFrame {
     public Temporada() {
         initComponents();
         cargarTemporadas();
+        jDateChooserInicio.setMinSelectableDate(new java.util.Date());
+        jDateChooserInicio.addPropertyChangeListener("date", evt -> {
+            java.util.Date fechaInicio = jDateChooserInicio.getDate();
+            if (fechaInicio != null) {
+                jDateChooserFin.setMinSelectableDate(fechaInicio);
+            }
+        });
+
     }
 
     /**
@@ -56,7 +65,7 @@ public class Temporada extends javax.swing.JFrame {
                 {null, null, null, null}
             },
             new String [] {
-                "Id Temprada", "Nombre", "Fecha Inicio", "Fecha Fin"
+                "Id Temporada", "Nombre", "Fecha Inicio", "Fecha Fin"
             }
         ) {
             Class[] types = new Class [] {
@@ -159,11 +168,11 @@ public class Temporada extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel5)
-                            .addComponent(jDateChooserInicio, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(74, 74, 74)
+                            .addComponent(jDateChooserInicio, javax.swing.GroupLayout.PREFERRED_SIZE, 171, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jDateChooserFin, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel4)))
+                            .addComponent(jLabel4)
+                            .addComponent(jDateChooserFin, javax.swing.GroupLayout.PREFERRED_SIZE, 168, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                         .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                             .addComponent(jButtonAgregar, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -201,47 +210,47 @@ public class Temporada extends javax.swing.JFrame {
                     .addComponent(jButtonEliminar, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jButtonEditar, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(53, 53, 53)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(96, Short.MAX_VALUE))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 154, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(41, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void cargarTemporadas() {
-    try {
-        Connection conexion = Conexion.conectar();
-        String sql = "SELECT * FROM ProductoInfo.Temporada";
-        PreparedStatement stmt = conexion.prepareStatement(sql);
-        ResultSet rs = stmt.executeQuery();
+        try {
+            Connection conexion = Conexion.conectar();
+            String sql = "SELECT * FROM ProductoInfo.Temporada";
+            PreparedStatement stmt = conexion.prepareStatement(sql);
+            ResultSet rs = stmt.executeQuery();
 
-        DefaultTableModel modelo = (DefaultTableModel) TableTemporada.getModel();
-        modelo.setRowCount(0); // Limpiar tabla
+            DefaultTableModel modelo = (DefaultTableModel) TableTemporada.getModel();
+            modelo.setRowCount(0); // Limpiar tabla
 
-        while (rs.next()) {
-            Object[] fila = {
-                rs.getInt("id_temporada"),
-                rs.getString("nombre"),
-                rs.getDate("fecha_inicio"),
-                rs.getDate("fecha_fin")
-            };
-            modelo.addRow(fila);
+            while (rs.next()) {
+                Object[] fila = {
+                    rs.getInt("id_temporada"),
+                    rs.getString("nombre"),
+                    rs.getDate("fecha_inicio"),
+                    rs.getDate("fecha_fin")
+                };
+                modelo.addRow(fila);
+            }
+
+            rs.close();
+            stmt.close();
+            conexion.close();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error al consultar datos de la temporada\n" + e.getMessage());
         }
+    }
 
-        rs.close();
-        stmt.close();
-        conexion.close();
-    } catch (Exception e) {
-        JOptionPane.showMessageDialog(null, "Error al consultar datos de la temporada\n" + e.getMessage());
-    }
-}
-    
     private void jDateChooserInicioPropertyChange(java.beans.PropertyChangeEvent evt) {
-    if ("date".equals(evt.getPropertyName())) {
-        jDateChooserFin.setMinSelectableDate(jDateChooserInicio.getDate());
+        if ("date".equals(evt.getPropertyName())) {
+            jDateChooserFin.setMinSelectableDate(jDateChooserInicio.getDate());
+        }
     }
-}
-    
+
     private void TableTemporadaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_TableTemporadaMouseClicked
         // TODO add your handling code here:
         int fila = TableTemporada.getSelectedRow();
@@ -283,7 +292,7 @@ public class Temporada extends javax.swing.JFrame {
 
     private void jButtonEditarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonEditarActionPerformed
 
-                int fila = TableTemporada.getSelectedRow();
+        int fila = TableTemporada.getSelectedRow();
         if (fila >= 0) {
             String nombre = jTextFieldNombre.getText().trim();
             java.util.Date fechaInicioUtil = jDateChooserInicio.getDate();
