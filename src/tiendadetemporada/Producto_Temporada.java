@@ -4,17 +4,25 @@
  */
 package tiendadetemporada;
 
+import javax.swing.table.DefaultTableModel;
+import java.sql.*;
+import javax.swing.JOptionPane;
+import java.text.SimpleDateFormat;
+import java.util.Locale;
+
 /**
  *
  * @author migue
  */
 public class Producto_Temporada extends javax.swing.JFrame {
 
-    /**
-     * Creates new form Producto_Temporada
-     */
+    private long selectedID = -1;
+    private java.util.Map<String, Long> mapProductos = new java.util.HashMap<>();
+    private java.util.Map<String, Long> mapTemporadas = new java.util.HashMap<>();
+
     public Producto_Temporada() {
         initComponents();
+        cargarTablaProductoTemporada();
     }
 
     /**
@@ -42,20 +50,20 @@ public class Producto_Temporada extends javax.swing.JFrame {
         TableTemporada.setFont(new java.awt.Font("Century Gothic", 1, 18)); // NOI18N
         TableTemporada.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null}
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null}
             },
             new String [] {
-                "Id", "Producto", "Temporada"
+                "Id", "IdProducto", "IdTemporafa", "Producto", "Temporada"
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.Integer.class, java.lang.String.class, java.lang.String.class
+                java.lang.Integer.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class
             };
             boolean[] canEdit = new boolean [] {
-                false, false, false
+                false, false, false, false, false
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -190,28 +198,236 @@ public class Producto_Temporada extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void TableTemporadaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_TableTemporadaMouseClicked
-      
+        int fila = TableTemporada.getSelectedRow();
+        if (fila >= 0) {
+            selectedID = Long.parseLong(TableTemporada.getValueAt(fila, 0).toString()); // ID de relación
+
+            long idProducto = Long.parseLong(TableTemporada.getValueAt(fila, 1).toString());
+            long idTemporada = Long.parseLong(TableTemporada.getValueAt(fila, 2).toString());
+
+            // Buscar y seleccionar producto
+            for (String key : mapProductos.keySet()) {
+                if (mapProductos.get(key).equals(idProducto)) {
+                    jComboBoxProducto1.setSelectedItem(key);
+                    break;
+                }
+            }
+
+            // Buscar y seleccionar temporada
+            for (String key : mapTemporadas.keySet()) {
+                if (mapTemporadas.get(key).equals(idTemporada)) {
+                    jComboBoxTemporada.setSelectedItem(key);
+                    break;
+                }
+            }
+        }
+
     }//GEN-LAST:event_TableTemporadaMouseClicked
 
     private void jButtonEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonEliminarActionPerformed
-       
+        if (selectedID == -1) {
+            JOptionPane.showMessageDialog(null, "Selecciona una fila");
+            return;
+        }
+
+        try {
+            Connection con = Conexion.conectar();
+            String sql = "DELETE FROM ProductoInfo.Producto_Temporada WHERE id_producto_temporada = ?";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setLong(1, selectedID);
+            ps.executeUpdate();
+            con.close();
+
+            JOptionPane.showMessageDialog(null, "Eliminado correctamente");
+            cargarTablaProductoTemporada();
+            selectedID = -1;
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error al eliminar");
+        }
     }//GEN-LAST:event_jButtonEliminarActionPerformed
 
     private void jButtonEditarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonEditarActionPerformed
-      
+        if (selectedID == -1) {
+            JOptionPane.showMessageDialog(null, "Selecciona una relación");
+            return;
+        }
+
+        String productoKey = (String) jComboBoxProducto1.getSelectedItem();
+        String temporadaKey = (String) jComboBoxTemporada.getSelectedItem();
+
+        long idProd = mapProductos.get(productoKey);
+        long idTemp = mapTemporadas.get(temporadaKey);
+
+        try {
+            Connection con = Conexion.conectar();
+            String sql = "UPDATE ProductoInfo.Producto_Temporada SET id_producto = ?, id_temporada = ? WHERE id_producto_temporada = ?";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setLong(1, idProd);
+            ps.setLong(2, idTemp);
+            ps.setLong(3, selectedID);
+            ps.executeUpdate();
+            con.close();
+
+            JOptionPane.showMessageDialog(null, "Vinculación actualizada");
+            cargarTablaProductoTemporada();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error al actualizar");
+        }
     }//GEN-LAST:event_jButtonEditarActionPerformed
 
     private void jButtonAgregarMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jButtonAgregarMouseClicked
-        // TODO add your handling code here:
+        String productoKey = (String) jComboBoxProducto1.getSelectedItem();
+        String temporadaKey = (String) jComboBoxTemporada.getSelectedItem();
+
+        if (productoKey == null || temporadaKey == null) {
+            JOptionPane.showMessageDialog(null, "Selecciona producto y temporada");
+            return;
+        }
+
+        long idProd = mapProductos.get(productoKey);
+        long idTemp = mapTemporadas.get(temporadaKey);
+
+        try {
+            Connection con = Conexion.conectar();
+            String sql = "INSERT INTO ProductoInfo.Producto_Temporada (id_producto, id_temporada) VALUES (?, ?)";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setLong(1, idProd);
+            ps.setLong(2, idTemp);
+            ps.executeUpdate();
+            con.close();
+
+            JOptionPane.showMessageDialog(null, "Vinculación agregada correctamente");
+            cargarTablaProductoTemporada();
+        } catch (SQLIntegrityConstraintViolationException e) {
+            JOptionPane.showMessageDialog(null, "Ya existe esa vinculación");
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error al insertar");
+        }
     }//GEN-LAST:event_jButtonAgregarMouseClicked
 
     private void jButtonAgregarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonAgregarActionPerformed
-      
+
     }//GEN-LAST:event_jButtonAgregarActionPerformed
 
     private void jComboBoxProducto1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBoxProducto1ActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_jComboBoxProducto1ActionPerformed
+
+    private void cargarProductos() {
+        try {
+            Connection con = Conexion.conectar();
+            String sql = "SELECT id_producto, nombre_producto FROM ProductoInfo.Producto";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+
+            jComboBoxProducto1.removeAllItems();
+            mapProductos.clear();
+
+            while (rs.next()) {
+                long id = rs.getLong("id_producto");
+                String display = id + " - " + rs.getString("nombre_producto");
+                jComboBoxProducto1.addItem(display);
+                mapProductos.put(display, id);
+            }       
+        jComboBoxProducto1.setSelectedIndex(-1);
+            con.close();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error al cargar productos");
+        }
+    }
+
+    private void cargarTemporadas() {
+        try {
+            Connection con = Conexion.conectar();
+            String sql = "SELECT id_temporada, nombre, fecha_inicio, fecha_fin FROM ProductoInfo.Temporada";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+
+            jComboBoxTemporada.removeAllItems();
+            mapTemporadas.clear();
+
+            while (rs.next()) {
+                long id = rs.getLong("id_temporada");
+                Date fechaInicio = rs.getDate("fecha_inicio");
+                Date fechaFin = rs.getDate("fecha_fin");
+
+                String mesInicio = new java.text.SimpleDateFormat("MMMM", new java.util.Locale("es")).format(fechaInicio);
+                String mesFin = new java.text.SimpleDateFormat("MMMM", new java.util.Locale("es")).format(fechaFin);
+
+                String display = rs.getString("nombre") + " (" + mesInicio + " - " + mesFin + ")";
+                jComboBoxTemporada.addItem(display);
+                mapTemporadas.put(display, id);
+            }
+            jComboBoxTemporada.setSelectedIndex(-1);
+            
+            con.close();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error al cargar temporadas");
+        }
+    }
+
+    private void cargarTablaProductoTemporada() {
+        cargarProductos();
+        cargarTemporadas();
+
+        try {
+            Connection con = Conexion.conectar();
+            String sql = "SELECT pt.id_producto_temporada, "
+                    + "p.id_producto, p.nombre_producto, "
+                    + "t.id_temporada, t.nombre AS nombre_temporada, "
+                    + "t.fecha_inicio, t.fecha_fin "
+                    + "FROM ProductoInfo.Producto_Temporada pt "
+                    + "JOIN ProductoInfo.Producto p ON pt.id_producto = p.id_producto "
+                    + "JOIN ProductoInfo.Temporada t ON pt.id_temporada = t.id_temporada";
+
+            PreparedStatement ps = con.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+
+            DefaultTableModel model = (DefaultTableModel) TableTemporada.getModel();
+            model.setRowCount(0);
+
+            SimpleDateFormat formatoMes = new SimpleDateFormat("MMMM", new Locale("es", "ES"));
+
+            while (rs.next()) {
+                long idRelacion = rs.getLong("id_producto_temporada");
+                long idProducto = rs.getLong("id_producto");
+                String nombreProducto = rs.getString("nombre_producto");
+
+                long idTemporada = rs.getLong("id_temporada");
+                String nombreTemporada = rs.getString("nombre_temporada");
+
+                Date fechaInicio = rs.getDate("fecha_inicio");
+                Date fechaFin = rs.getDate("fecha_fin");
+
+                String mesInicio = formatoMes.format(fechaInicio);
+                String mesFin = formatoMes.format(fechaFin);
+
+                // Capitalizar primera letra
+                mesInicio = mesInicio.substring(0, 1).toUpperCase() + mesInicio.substring(1);
+                mesFin = mesFin.substring(0, 1).toUpperCase() + mesFin.substring(1);
+
+                String productoDisplay = idProducto + " - " + nombreProducto;
+                String temporadaDisplay = nombreTemporada + " (" + mesInicio + " - " + mesFin + ")";
+
+                // Agregamos ID de producto y temporada como columnas ocultas
+                model.addRow(new Object[]{idRelacion, idProducto, idTemporada, productoDisplay, temporadaDisplay});
+            }
+
+            con.close();
+
+            // Ocultar columnas de IDs intermedios
+            TableTemporada.getColumnModel().getColumn(1).setMinWidth(0);
+            TableTemporada.getColumnModel().getColumn(1).setMaxWidth(0);
+            TableTemporada.getColumnModel().getColumn(1).setWidth(0);
+
+            TableTemporada.getColumnModel().getColumn(2).setMinWidth(0);
+            TableTemporada.getColumnModel().getColumn(2).setMaxWidth(0);
+            TableTemporada.getColumnModel().getColumn(2).setWidth(0);
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error al cargar tabla Producto-Temporada\n" + e.getMessage());
+        }
+    }
 
     /**
      * @param args the command line arguments

@@ -13,7 +13,7 @@ public class Producto_Apartado extends javax.swing.JFrame {
     /**
      * Creates new form Producto_Apartado
      */
-    public Producto_Apartado() {
+    public Producto_Apartado(long idApartado, boolean esModificable) {
         initComponents();
     }
 
@@ -267,7 +267,7 @@ public class Producto_Apartado extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new Producto_Apartado().setVisible(true);
+//                new Producto_Apartado().setVisible(true);
             }
         });
     }

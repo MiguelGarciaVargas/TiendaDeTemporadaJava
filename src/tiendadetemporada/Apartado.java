@@ -4,17 +4,28 @@
  */
 package tiendadetemporada;
 
+import javax.swing.table.DefaultTableModel;
+import java.sql.*;
+import javax.swing.JOptionPane;
+import java.text.SimpleDateFormat;
+import java.util.Locale;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Date;
+
 /**
  *
  * @author migue
  */
 public class Apartado extends javax.swing.JFrame {
 
-    /**
-     * Creates new form Apartado
-     */
+    private long idSeleccionado = -1;
+    private boolean selectedModificable = false;
+    private Map<String, Long> mapTarjetas = new HashMap<>();
+
     public Apartado() {
         initComponents();
+        cargarTablaApartado();
     }
 
     /**
@@ -36,6 +47,8 @@ public class Apartado extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         jComboBoxCliente = new javax.swing.JComboBox<>();
         jDateChooserVencimiento = new com.toedter.calendar.JDateChooser();
+        btn_abono = new javax.swing.JButton();
+        btn_producto_apartado = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -82,20 +95,20 @@ public class Apartado extends javax.swing.JFrame {
         TableApartado.setFont(new java.awt.Font("Century Gothic", 1, 18)); // NOI18N
         TableApartado.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null}
+                {null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null}
             },
             new String [] {
-                "IdApartado", "Total", "Saldo Pendiente", "Estado", "Cliente", "Inicio", "Vencimiento"
+                "IdApartado", "Total", "Saldo Pendiente", "Estado", "ID Tarjeta", "Cliente", "Inicio", "Vencimiento"
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.Integer.class, java.lang.Float.class, java.lang.Float.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class
+                java.lang.Integer.class, java.lang.Float.class, java.lang.Float.class, java.lang.String.class, java.lang.Object.class, java.lang.String.class, java.lang.String.class, java.lang.String.class
             };
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false
+                false, false, false, false, true, false, false, false
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -133,6 +146,26 @@ public class Apartado extends javax.swing.JFrame {
             }
         });
 
+        btn_abono.setBackground(new java.awt.Color(0, 102, 255));
+        btn_abono.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        btn_abono.setForeground(new java.awt.Color(255, 255, 255));
+        btn_abono.setText("Abonos");
+        btn_abono.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_abonoActionPerformed(evt);
+            }
+        });
+
+        btn_producto_apartado.setBackground(new java.awt.Color(0, 102, 255));
+        btn_producto_apartado.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        btn_producto_apartado.setForeground(new java.awt.Color(255, 255, 255));
+        btn_producto_apartado.setText("Producto Apartado");
+        btn_producto_apartado.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_producto_apartadoActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -159,29 +192,43 @@ public class Apartado extends javax.swing.JFrame {
                         .addGap(25, 25, 25)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(jComboBoxCliente, 0, 218, Short.MAX_VALUE)
-                            .addComponent(jDateChooserVencimiento, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(jDateChooserVencimiento, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(81, 81, 81)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(btn_abono, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btn_producto_apartado, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap(66, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(24, 24, 24)
                 .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(13, 13, 13)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel6)
-                    .addComponent(jComboBoxCliente, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(30, 30, 30)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jDateChooserVencimiento, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel3))
-                .addGap(36, 36, 36)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButtonAgregar, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButtonEliminar, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButtonEditar, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(31, 31, 31)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(13, 13, 13)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel6)
+                            .addComponent(jComboBoxCliente, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btn_producto_apartado, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(30, 30, 30)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jDateChooserVencimiento, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel3))
+                        .addGap(36, 36, 36)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jButtonAgregar, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jButtonEliminar, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jButtonEditar, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(31, 31, 31)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(btn_abono, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -190,28 +237,326 @@ public class Apartado extends javax.swing.JFrame {
 
     private void jButtonEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonEliminarActionPerformed
         // TODO add your handling code here:
-       
+        if (idSeleccionado == -1) {
+            JOptionPane.showMessageDialog(null, "Selecciona un apartado para eliminar");
+            return;
+        }
+
+        try {
+            Connection con = Conexion.conectar();
+
+            // Primero eliminamos de Producto_Apartado
+            String sql = "DELETE FROM VentasInfo.Producto_Apartado WHERE id_apartado = ?";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setLong(1, idSeleccionado);
+            ps.executeUpdate();
+
+            // Luego eliminamos el apartado
+            sql = "DELETE FROM VentasInfo.Apartado WHERE id_apartado = ?";
+            ps = con.prepareStatement(sql);
+            ps.setLong(1, idSeleccionado);
+            ps.executeUpdate();
+
+            con.close();
+            JOptionPane.showMessageDialog(null, "Apartado eliminado correctamente");
+            cargarTablaApartado();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error al eliminar");
+        }
     }//GEN-LAST:event_jButtonEliminarActionPerformed
 
     private void jButtonEditarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonEditarActionPerformed
-       
+        int fila = TableApartado.getSelectedRow();
+        if (fila < 0) {
+            JOptionPane.showMessageDialog(null, "Selecciona un apartado para editar.");
+            return;
+        }
+
+        long idApartado = Long.parseLong(TableApartado.getValueAt(fila, 0).toString());
+        String seleccion = (String) jComboBoxCliente.getSelectedItem();
+        if (seleccion == null || !mapTarjetas.containsKey(seleccion)) {
+            JOptionPane.showMessageDialog(null, "Selecciona un cliente válido.");
+            return;
+        }
+
+        Long idTarjeta = mapTarjetas.get(seleccion);
+        java.util.Date fechaSeleccionada = jDateChooserVencimiento.getDate();
+        if (fechaSeleccionada == null) {
+            JOptionPane.showMessageDialog(null, "Selecciona una fecha de vencimiento.");
+            return;
+        }
+
+        java.sql.Date fechaSQL = new java.sql.Date(fechaSeleccionada.getTime());
+
+        try {
+            Connection con = Conexion.conectar();
+            String sql = "UPDATE VentasInfo.Apartado "
+                    + "SET id_tarjeta_cliente = ?, fecha_vencimiento = ? "
+                    + "WHERE id_apartado = ?";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setLong(1, idTarjeta);
+            ps.setDate(2, fechaSQL);
+            ps.setLong(3, idApartado);
+
+            int filas = ps.executeUpdate();
+            System.out.println("ID fila: " + fila);
+System.out.println("ID Apartado: " + idApartado);
+System.out.println("Fecha nueva: " + fechaSQL);
+System.out.println("ID Tarjeta: " + idTarjeta);
+
+            if (filas > 0) {
+                JOptionPane.showMessageDialog(null, "Apartado actualizado correctamente.");
+                cargarTablaApartado();
+            } else {
+                JOptionPane.showMessageDialog(null, "No se modificó ningún registro.");
+            }
+
+            ps.close();
+            con.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error al actualizar el apartado: " + e.getMessage());
+        }
+
+
     }//GEN-LAST:event_jButtonEditarActionPerformed
 
     private void jButtonAgregarMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jButtonAgregarMouseClicked
-        // TODO add your handling code here:
+        String seleccion = (String) jComboBoxCliente.getSelectedItem();
+        Date vencimiento = jDateChooserVencimiento.getDate();
+
+        if (seleccion == null || vencimiento == null) {
+            JOptionPane.showMessageDialog(null, "Selecciona cliente y fecha de vencimiento");
+            return;
+        }
+
+        long idTarjeta = mapTarjetas.get(seleccion);
+        java.sql.Date fechaInicio = new java.sql.Date(new Date().getTime());
+        java.sql.Date fechaFin = new java.sql.Date(vencimiento.getTime());
+
+        try {
+            Connection con = Conexion.conectar();
+            String sql = "INSERT INTO VentasInfo.Apartado "
+                    + "(id_tarjeta_cliente, total_apartado, fecha_creacion, fecha_vencimiento, saldo_pendiente, estado) "
+                    + "VALUES (?, 0, ?, ?, 0, 'En proceso')";
+
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setLong(1, idTarjeta);
+            ps.setDate(2, fechaInicio);
+            ps.setDate(3, fechaFin);
+            ps.executeUpdate();
+
+            con.close();
+            JOptionPane.showMessageDialog(null, "Apartado agregado correctamente");
+            cargarTablaApartado();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error al agregar apartado");
+        }
     }//GEN-LAST:event_jButtonAgregarMouseClicked
 
     private void jButtonAgregarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonAgregarActionPerformed
-      
+
     }//GEN-LAST:event_jButtonAgregarActionPerformed
 
     private void TableApartadoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_TableApartadoMouseClicked
-    
+        int fila = TableApartado.getSelectedRow();
+        if (fila < 0) {
+            return;
+        }
+
+        try {
+            idSeleccionado = Long.parseLong(TableApartado.getValueAt(fila, 0).toString());
+            String estado = TableApartado.getValueAt(fila, 3).toString(); // "En proceso", "Liquidado", etc.
+            long idTarjeta = Long.parseLong(TableApartado.getValueAt(fila, 4).toString());
+            Date fechaVencimiento = (Date) TableApartado.getValueAt(fila, 7); // Fecha vencimiento
+
+            // Buscar texto exacto del combo para ese idTarjeta
+            String textoCombo = null;
+            for (Map.Entry<String, Long> entry : mapTarjetas.entrySet()) {
+                if (entry.getValue().equals(idTarjeta)) {
+                    textoCombo = entry.getKey();
+                    break;
+                }
+            }
+
+            if (textoCombo != null) {
+                jComboBoxCliente.setSelectedItem(textoCombo);
+            } else {
+                jComboBoxCliente.setSelectedIndex(-1); // En caso de no encontrarlo
+            }
+
+            jDateChooserVencimiento.setDate(fechaVencimiento);
+
+            selectedModificable = !estado.equalsIgnoreCase("Liquidado");
+            btn_producto_apartado.setEnabled(true);
+            btn_abono.setEnabled(true);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error al cargar datos del apartado seleccionado: " + e.getMessage());
+        }
+
     }//GEN-LAST:event_TableApartadoMouseClicked
 
     private void jComboBoxClienteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBoxClienteActionPerformed
         // TODO add your handling code here:
+        String seleccion = (String) jComboBoxCliente.getSelectedItem();
+        if (seleccion == null) {
+            return;
+        }
+
+        Long idTarjeta = mapTarjetas.get(seleccion);
+        if (idTarjeta == null) {
+            return;
+        }
+        try {
+            Connection con = Conexion.conectar();
+            String sql = "SELECT fecha_vencimiento FROM ClientesInfo.Tarjeta_Cliente WHERE id_tarjeta_cliente = ?";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setLong(1, idTarjeta);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                Date fechaLimite = rs.getDate("fecha_vencimiento");
+                jDateChooserVencimiento.setMaxSelectableDate(fechaLimite);
+
+                if (jDateChooserVencimiento.getDate() != null
+                        && jDateChooserVencimiento.getDate().after(fechaLimite)) {
+                    jDateChooserVencimiento.setDate(fechaLimite);
+                }
+            }
+
+            rs.close();
+            con.close();
+        } catch (Exception e) {
+            // opcional: mostrar error
+        }
     }//GEN-LAST:event_jComboBoxClienteActionPerformed
+
+    private void btn_abonoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_abonoActionPerformed
+        // TODO add your handling code here:    
+        if (idSeleccionado == -1) {
+            JOptionPane.showMessageDialog(null, "Selecciona un apartado primero");
+            return;
+        }
+
+        Abono ventanaAbono = new Abono(idSeleccionado, selectedModificable);
+        ventanaAbono.setVisible(true);
+        this.dispose();
+    }//GEN-LAST:event_btn_abonoActionPerformed
+
+    private void btn_producto_apartadoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_producto_apartadoActionPerformed
+        // TODO add your handling code here:
+        if (idSeleccionado == -1) {
+            JOptionPane.showMessageDialog(null, "Selecciona un apartado primero");
+            return;
+        }
+
+        Producto_Apartado ventanaProducto = new Producto_Apartado(idSeleccionado, selectedModificable);
+        ventanaProducto.setVisible(true);
+        this.dispose();
+    }//GEN-LAST:event_btn_producto_apartadoActionPerformed
+
+    private void cargarTarjetasConCliente() {
+        try {
+            Connection con = Conexion.conectar();
+            String sql = "SELECT tc.id_tarjeta_cliente, RIGHT(tc.numero_tarjeta, 3) AS ultimos, "
+                    + "tc.banco, c.nombre_cliente "
+                    + "FROM ClientesInfo.Tarjeta_Cliente tc "
+                    + "JOIN ClientesInfo.Cliente c ON tc.id_cliente = c.id_cliente";
+
+            PreparedStatement ps = con.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+
+            jComboBoxCliente.removeAllItems(); // O jComboBoxTarjetas, según cómo lo nombres
+            mapTarjetas.clear(); // Asegúrate de tener un Map<String, Long> mapTarjetas declarado
+
+            while (rs.next()) {
+                long id = rs.getLong("id_tarjeta_cliente");
+                String ultimos = rs.getString("ultimos");
+                String banco = rs.getString("banco");
+                String nombre = rs.getString("nombre_cliente");
+
+                String display = "*" + ultimos + " (" + banco + ") - " + nombre;
+
+                jComboBoxCliente.addItem(display); // O el combo que estés usando
+                mapTarjetas.put(display, id);
+            }
+
+            jComboBoxCliente.setSelectedIndex(-1);
+            rs.close();
+            con.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error al cargar tarjetas: " + e.getMessage());
+        }
+    }
+
+    private void cargarTablaApartado() {
+    cargarTarjetasConCliente(); // Asegura que se carguen los combos
+
+    try {
+        Connection con = Conexion.conectar();
+        String sql = """
+            SELECT a.id_apartado, 
+                   a.total_apartado, 
+                   a.saldo_pendiente, 
+                   a.estado, 
+                   a.id_tarjeta_cliente, 
+                   CONCAT('*', RIGHT(tc.numero_tarjeta, 3), ' (', tc.banco, ') - ', c.nombre_cliente) AS tarjeta, 
+                   a.fecha_creacion, 
+                   a.fecha_vencimiento
+            FROM VentasInfo.Apartado a
+            JOIN ClientesInfo.Tarjeta_Cliente tc ON a.id_tarjeta_cliente = tc.id_tarjeta_cliente
+            JOIN ClientesInfo.Cliente c ON tc.id_cliente = c.id_cliente
+        """;
+
+        PreparedStatement ps = con.prepareStatement(sql);
+        ResultSet rs = ps.executeQuery();
+
+        DefaultTableModel model = (DefaultTableModel) TableApartado.getModel();
+        model.setRowCount(0); // Limpiar tabla
+
+        while (rs.next()) {
+            Object[] fila = {
+                rs.getInt("id_apartado"),           // 0
+                rs.getFloat("total_apartado"),      // 1
+                rs.getFloat("saldo_pendiente"),     // 2
+                rs.getString("estado"),             // 3
+                rs.getLong("id_tarjeta_cliente"),   // 4 ← Oculta
+                rs.getString("tarjeta"),            // 5
+                rs.getDate("fecha_creacion"),       // 6
+                rs.getDate("fecha_vencimiento")     // 7 ← ¡Esta sí es la importante!
+            };
+            model.addRow(fila);
+        }
+
+        // Ocultar columna ID tarjeta
+        TableApartado.getColumnModel().getColumn(4).setMinWidth(0);
+        TableApartado.getColumnModel().getColumn(4).setMaxWidth(0);
+        TableApartado.getColumnModel().getColumn(4).setWidth(0);
+
+        // Reset campos visuales
+        jComboBoxCliente.setSelectedIndex(-1);
+        jDateChooserVencimiento.setDate(null);
+        idSeleccionado = -1;
+        selectedModificable = false;
+
+        // Desactivar botones por default
+        btn_producto_apartado.setEnabled(false);
+        btn_abono.setEnabled(false);
+
+        rs.close();
+        ps.close();
+        con.close();
+
+    } catch (Exception e) {
+        e.printStackTrace(); // Para debug
+        JOptionPane.showMessageDialog(null, "Error al cargar datos del apartado:\n" + e.getMessage());
+    }
+}
 
     /**
      * @param args the command line arguments
@@ -250,6 +595,8 @@ public class Apartado extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTable TableApartado;
+    private javax.swing.JButton btn_abono;
+    private javax.swing.JButton btn_producto_apartado;
     private javax.swing.JButton jButtonAgregar;
     private javax.swing.JButton jButtonEditar;
     private javax.swing.JButton jButtonEliminar;

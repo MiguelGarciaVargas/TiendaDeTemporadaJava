@@ -13,7 +13,7 @@ public class Abono extends javax.swing.JFrame {
     /**
      * Creates new form Abono
      */
-    public Abono() {
+    public Abono(long idApartado, boolean modificable) {
         initComponents();
     }
 
@@ -253,7 +253,7 @@ public class Abono extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new Abono().setVisible(true);
+//                new Abono().setVisible(true);
             }
         });
     }
