@@ -56,7 +56,7 @@ public class Producto_Temporada extends javax.swing.JFrame {
                 {null, null, null, null, null}
             },
             new String [] {
-                "Id", "IdProducto", "IdTemporafa", "Producto", "Temporada"
+                "IdProductoTemporada", "IdProducto", "IdTemporafa", "Producto", "Temporada"
             }
         ) {
             Class[] types = new Class [] {
@@ -83,6 +83,10 @@ public class Producto_Temporada extends javax.swing.JFrame {
         });
         jScrollPane1.setViewportView(TableTemporada);
         TableTemporada.getColumnModel().getSelectionModel().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+        if (TableTemporada.getColumnModel().getColumnCount() > 0) {
+            TableTemporada.getColumnModel().getColumn(0).setMinWidth(60);
+            TableTemporada.getColumnModel().getColumn(0).setMaxWidth(60);
+        }
 
         jLabel1.setFont(new java.awt.Font("Century Gothic", 1, 38)); // NOI18N
         jLabel1.setForeground(new java.awt.Color(0, 51, 153));

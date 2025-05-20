@@ -4,17 +4,39 @@
  */
 package tiendadetemporada;
 
+import javax.swing.table.DefaultTableModel;
+import java.sql.*;
+import javax.swing.JOptionPane;
+import java.text.SimpleDateFormat;
+import java.util.Locale;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Date;
+
 /**
  *
  * @author migue
  */
 public class Producto_Apartado extends javax.swing.JFrame {
 
+    private long idApartado;
+    private boolean sePuedeModificar;
+    private Map<String, Long> mapProductos = new HashMap<>();
+    private int selectedProductoId = -1;
+    private int cantidadAnterior = -1;
+    private long productoSeleccionado = -1;
+    private Map<Long, String> idToComboText = new HashMap<>();
+
     /**
      * Creates new form Producto_Apartado
      */
     public Producto_Apartado(long idApartado, boolean esModificable) {
         initComponents();
+        this.idApartado = idApartado;
+        this.sePuedeModificar = esModificable;
+        jLabelApartadoId.setText(String.valueOf(idApartado));
+        cargarTablaProductoApartado();
+        bloquearBotonesSiNoModificable();
     }
 
     /**
@@ -117,6 +139,11 @@ public class Producto_Apartado extends javax.swing.JFrame {
         });
         jScrollPane1.setViewportView(TableApartado);
         TableApartado.getColumnModel().getSelectionModel().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+        if (TableApartado.getColumnModel().getColumnCount() > 0) {
+            TableApartado.getColumnModel().getColumn(0).setMinWidth(60);
+            TableApartado.getColumnModel().getColumn(0).setPreferredWidth(60);
+            TableApartado.getColumnModel().getColumn(0).setMaxWidth(60);
+        }
 
         jLabel6.setFont(new java.awt.Font("Century Gothic", 1, 18)); // NOI18N
         jLabel6.setForeground(new java.awt.Color(0, 102, 255));
@@ -214,11 +241,87 @@ public class Producto_Apartado extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButtonEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonEliminarActionPerformed
-      
+        int fila = TableApartado.getSelectedRow();
+        if (fila < 0) {
+            JOptionPane.showMessageDialog(null, "Selecciona una fila.");
+            return;
+        }
+
+        long idProducto = (long) TableApartado.getValueAt(fila, 0);
+
+        try {
+            Connection con = Conexion.conectar();
+            String sql = "DELETE FROM VentasInfo.Producto_Apartado WHERE id_apartado = ? AND id_producto = ?";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setLong(1, idApartado);
+            ps.setLong(2, idProducto);
+            ps.executeUpdate();
+            JOptionPane.showMessageDialog(null, "Producto eliminado.");
+            ps.close();
+            con.close();
+            cargarTablaProductoApartado();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error al eliminar: ");
+        }
     }//GEN-LAST:event_jButtonEliminarActionPerformed
 
     private void jButtonEditarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonEditarActionPerformed
-        
+        if (selectedProductoId == -1) {
+            JOptionPane.showMessageDialog(null, "Selecciona un producto de la tabla.");
+            return;
+        }
+
+        String seleccion = (String) jComboBoxProducto.getSelectedItem();
+        if (seleccion == null || !mapProductos.containsKey(seleccion)) {
+            JOptionPane.showMessageDialog(null, "Selecciona un producto válido.");
+            return;
+        }
+
+        long nuevoId = mapProductos.get(seleccion);
+        int nuevaCantidad = (int) jSpinnerCantidad.getValue();
+
+        if (nuevaCantidad <= 0) {
+            JOptionPane.showMessageDialog(null, "La cantidad debe ser mayor a 0.");
+            return;
+        }
+
+        try {
+            Connection con = Conexion.conectar();
+            String sqlPrecio = "SELECT existencias, precio_producto FROM ProductoInfo.Producto WHERE id_producto = ?";
+            PreparedStatement ps = con.prepareStatement(sqlPrecio);
+            ps.setLong(1, nuevoId);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                int existencias = rs.getInt("existencias");
+                float precio = rs.getFloat("precio_producto");
+
+                int disponibles = existencias + (nuevoId == selectedProductoId ? cantidadAnterior : 0);
+
+                if (nuevaCantidad > disponibles) {
+                    JOptionPane.showMessageDialog(null, "No hay suficientes existencias.");
+                    return;
+                }
+
+                float subtotal = precio * nuevaCantidad;
+
+                String update = "UPDATE VentasInfo.Producto_Apartado "
+                        + "SET id_producto = ?, cantidad = ?, subtotal_apartado = ? "
+                        + "WHERE id_apartado = ? AND id_producto = ?";
+                ps = con.prepareStatement(update);
+                ps.setLong(1, nuevoId);
+                ps.setInt(2, nuevaCantidad);
+                ps.setFloat(3, subtotal);
+                ps.setLong(4, idApartado);
+                ps.setLong(5, selectedProductoId);
+                ps.executeUpdate();
+                JOptionPane.showMessageDialog(null, "Producto actualizado.");
+                cargarTablaProductoApartado();
+            }
+            con.close();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error al actualizar: ");
+        }
     }//GEN-LAST:event_jButtonEditarActionPerformed
 
     private void jButtonAgregarMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jButtonAgregarMouseClicked
@@ -226,16 +329,163 @@ public class Producto_Apartado extends javax.swing.JFrame {
     }//GEN-LAST:event_jButtonAgregarMouseClicked
 
     private void jButtonAgregarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonAgregarActionPerformed
-        
+        String seleccion = (String) jComboBoxProducto.getSelectedItem();
+        if (seleccion == null || !mapProductos.containsKey(seleccion)) {
+            JOptionPane.showMessageDialog(null, "Selecciona un producto válido.");
+            return;
+        }
+
+        long idProducto = mapProductos.get(seleccion);
+        int cantidad = (int) jSpinnerCantidad.getValue();
+
+        if (cantidad <= 0) {
+            JOptionPane.showMessageDialog(null, "La cantidad debe ser mayor a 0.");
+            return;
+        }
+
+        try {
+            Connection con = Conexion.conectar();
+            String precioQuery = "SELECT precio_producto, existencias FROM ProductoInfo.Producto WHERE id_producto = ?";
+            PreparedStatement psPrecio = con.prepareStatement(precioQuery);
+            psPrecio.setLong(1, idProducto);
+            ResultSet rs = psPrecio.executeQuery();
+            if (rs.next()) {
+                float precio = rs.getFloat("precio_producto");
+                int existencias = rs.getInt("existencias");
+                if (cantidad > existencias) {
+                    JOptionPane.showMessageDialog(null, "No hay suficientes existencias.");
+                    return;
+                }
+                float subtotal = precio * cantidad;
+                String insert = "INSERT INTO VentasInfo.Producto_Apartado(id_producto, id_apartado, cantidad, subtotal_apartado) "
+                        + "VALUES (?, ?, ?, ?)";
+                PreparedStatement ps = con.prepareStatement(insert);
+                ps.setLong(1, idProducto);
+                ps.setLong(2, idApartado);
+                ps.setInt(3, cantidad);
+                ps.setFloat(4, subtotal);
+                ps.executeUpdate();
+                JOptionPane.showMessageDialog(null, "Producto agregado correctamente.");
+                ps.close();
+                cargarTablaProductoApartado();
+            }
+            con.close();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error al agregar producto: ");
+        }
     }//GEN-LAST:event_jButtonAgregarActionPerformed
 
     private void TableApartadoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_TableApartadoMouseClicked
-      
+        int fila = TableApartado.getSelectedRow();
+        if (fila >= 0) {
+            selectedProductoId = Integer.parseInt(TableApartado.getValueAt(fila, 0).toString());
+            cantidadAnterior = Integer.parseInt(TableApartado.getValueAt(fila, 2).toString());
+            productoSeleccionado = selectedProductoId;
+
+            // Usa el ID para buscar el texto del combo
+            String textoCombo = idToComboText.get((long) selectedProductoId);
+            if (textoCombo != null) {
+                jComboBoxProducto.setSelectedItem(textoCombo);
+            } else {
+                jComboBoxProducto.setSelectedIndex(-1);
+            }
+
+            jSpinnerCantidad.setValue(cantidadAnterior);
+        }
     }//GEN-LAST:event_TableApartadoMouseClicked
 
     private void jComboBoxProductoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBoxProductoActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_jComboBoxProductoActionPerformed
+
+    private void bloquearBotonesSiNoModificable() {
+        jButtonAgregar.setVisible(sePuedeModificar);
+        jButtonEditar.setVisible(sePuedeModificar);
+        jButtonEliminar.setVisible(sePuedeModificar);
+        jComboBoxProducto.setEnabled(sePuedeModificar);
+        jSpinnerCantidad.setEnabled(sePuedeModificar);
+    }
+
+    private void cargarComboProductos() {
+        mapProductos.clear();
+        idToComboText.clear(); // <--- nuevo
+        jComboBoxProducto.removeAllItems();
+
+        try {
+            Connection con = Conexion.conectar();
+            String sql = "SELECT p.id_producto, CONCAT(p.id_producto, ' - ', p.nombre_producto, ' (', t.nombre, ')') AS texto "
+                    + "FROM ProductoInfo.Producto_Temporada pt "
+                    + "JOIN ProductoInfo.Producto p ON pt.id_producto = p.id_producto "
+                    + "JOIN ProductoInfo.Temporada t ON pt.id_temporada = t.id_temporada";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                long id = rs.getLong("id_producto");
+                String texto = rs.getString("texto");
+
+                jComboBoxProducto.addItem(texto);
+                mapProductos.put(texto, id);
+                idToComboText.put(id, texto); // ← ¡aquí está la clave!
+            }
+
+            jComboBoxProducto.setSelectedIndex(-1);
+            rs.close();
+            con.close();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error al cargar productos: " + e.getMessage());
+        }
+    }
+
+
+
+    private float obtenerPrecioSiHayStock(long idProducto, int cantidad) {
+        try (Connection con = Conexion.conectar()) {
+            String sql = "SELECT existencias, precio_producto FROM ProductoInfo.Producto WHERE id_producto = ?";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setLong(1, idProducto);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                int stock = rs.getInt("existencias");
+                float precio = rs.getFloat("precio_producto");
+                if (cantidad <= stock) {
+                    return precio;
+                } else {
+                    JOptionPane.showMessageDialog(null, "No hay suficientes existencias.");
+                }
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error al consultar existencias");
+        }
+        return -1;
+    }
+
+    private float validarExistenciasParaActualizar(long nuevoId, int nuevaCantidad) {
+        try (Connection con = Conexion.conectar()) {
+            String sql = "SELECT existencias, precio_producto FROM ProductoInfo.Producto WHERE id_producto = ?";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setLong(1, nuevoId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                int stock = rs.getInt("existencias");
+                float precio = rs.getFloat("precio_producto");
+
+                int disponible = stock;
+                if (nuevoId == productoSeleccionado) {
+                    disponible += cantidadAnterior;
+                }
+
+                if (nuevaCantidad <= disponible) {
+                    return precio;
+                } else {
+                    JOptionPane.showMessageDialog(null, "No hay existencias suficientes.");
+                }
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error al validar existencias (actualización)");
+        }
+        return -1;
+    }
 
     /**
      * @param args the command line arguments

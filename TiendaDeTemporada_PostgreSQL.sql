@@ -740,72 +740,47 @@ sp_bindrule 'Rule_CantidadPositiva', 'VentasInfo.Detalle_Venta.cantidad';
 
 
 
+INSERT INTO ClientesInfo.Cliente (nombre_cliente, direccion_cliente, telefono_cliente, correo_cliente)
+VALUES 
+('Ana Torres', 'Av. Reforma 123, CDMX', '5512345678', 'ana.torres@email.com'),
+('Luis Gómez', 'Calle Luna 456, GDL', '3311122233', 'l.gomez@email.com'),
+('María Pérez', 'Blvd. del Sol 789, MTY', NULL, NULL);
 
---Productos
-INSERT INTO ProductoInfo.Producto (nombre_producto, precio_producto, existencias) VALUES
-('Calabaza', 100, 50),
-('Rosca', 500, 30),
-('Pie de Zanahora', 200, 20)
+INSERT INTO ClientesInfo.Cliente (nombre_cliente, direccion_cliente, telefono_cliente, correo_cliente)
+VALUES 
+('Marcela Rios', 'Carranza 1000, CDMX', '4441585858', 'mrios@gmail.com')
 
-INSERT INTO ProductoInfo.Producto (nombre_producto, precio_producto, existencias) VALUES
-('Conejo Pascua Grande', 500, 10)
+INSERT INTO ClientesInfo.Tarjeta_Cliente (id_cliente, numero_tarjeta, tipo, banco, codigo_seguridad, fecha_vencimiento)
+VALUES 
+(4, '7070707070707070', 'Crédito', 'Banamex', '002', '2028-05-30')
 
---Temporadas
-INSERT INTO ProductoInfo.Temporada (nombre, fecha_inicio, fecha_fin) VALUES
-('Primavera 2025', '2025-03-01', '2025-05-31'),
+INSERT INTO ClientesInfo.Tarjeta_Cliente (id_cliente, numero_tarjeta, tipo, banco, codigo_seguridad, fecha_vencimiento)
+VALUES 
+(1, '4111111111111111', 'Crédito', 'BBVA', '123', '2026-08-01'),
+(2, '5500000000000004', 'Débito', 'Banorte', '456', '2027-03-15'),
+(1, '340000000000009', 'Crédito', 'Santander', '789', '2025-12-31');
+
+INSERT INTO ProductoInfo.Producto (nombre_producto, precio_producto, existencias)
+VALUES 
+('Café Orgánico', 120.50, 50),
+('Té Verde Matcha', 95.00, 80),
+('Pan Artesanal', 45.75, 30);
+
+INSERT INTO ProductoInfo.Temporada (nombre, fecha_inicio, fecha_fin)
+VALUES 
 ('Verano 2025', '2025-06-01', '2025-08-31'),
-('Otoño 2025', '2025-09-01', '2025-11-30')
+('Navidad 2025', '2025-12-01', '2025-12-31');
 
-INSERT INTO ProductoInfo.Temporada (nombre, fecha_inicio, fecha_fin) VALUES
-('Pascua', '2025-02-17', '2025-05-31')
---Producto Temporada
-INSERT INTO ProductoInfo.Producto_Temporada (id_producto, id_temporada) VALUES
-(1, 1), -- Camiseta Dry-Fit en Primavera
-(2, 2), -- Pantalones Deportivos en Verano
-(3, 3) -- Sudadera Oversize en Otoño
+INSERT INTO ProductoInfo.Producto_Temporada (id_producto, id_temporada)
+VALUES 
+(1, 1), -- Café Orgánico en Verano
+(2, 2), -- Té Verde Matcha en Navidad
+(3, 2); -- Pan Artesanal en Navidad
 
 
---Clientes
-INSERT INTO ClientesInfo.Cliente (nombre_cliente, direccion_cliente, telefono_cliente, correo_cliente)
-VALUES ('Juan Pérez', 'Calle Falsa 123, Ciudad', '555-123-4567', 'juan.perez@email.com');
+SELECT p.id_producto, 
+       CONCAT(p.id_producto, ' - ', p.nombre_producto, ' (', t.nombre, ')') AS texto
+FROM ProductoInfo.Producto_Temporada pt
+JOIN ProductoInfo.Producto p ON pt.id_producto = p.id_producto
+JOIN ProductoInfo.Temporada t ON pt.id_temporada = t.id_temporada;
 
-INSERT INTO ClientesInfo.Cliente (nombre_cliente, direccion_cliente, telefono_cliente, correo_cliente)
-VALUES ('María González', 'Avenida Central 456, Ciudad', '555-987-6543', 'maria.gonzalez@email.com');
-
---Tarjetas
-INSERT INTO ClientesInfo.Tarjeta_Cliente (id_cliente, numero_tarjeta, tipo, banco, codigo_seguridad, fecha_vencimiento)
-VALUES (1, '1234567890123456', 'Crédito', 'BBVA', '123', '2026-07-01');
-
-INSERT INTO ClientesInfo.Tarjeta_Cliente (id_cliente, numero_tarjeta, tipo, banco, codigo_seguridad, fecha_vencimiento)
-VALUES (2, '9876543210987654', 'Débito', 'Santander', '456', '2025-12-01');
-
-select * from ClientesInfo.Tarjeta_Cliente
-
-
---Apartado
-select * from VentasInfo.Apartado
-
-select * from ProductoInfo.Producto
-
-SELECT id_producto, id_apartado, cantidad, subtotal_apartado FROM VentasInfo.Producto_Apartado
-
-select * from ClientesInfo.Tarjeta_Cliente
-
-
-select * from VentasInfo.Producto_Apartado
-
-update VentasInfo.Apartado set saldo_pendiente = 5500 where id_apartado = 2
-delete from VentasInfo.Abono where id_apartado = 2
-
-INSERT INTO VentasInfo.Abono (id_apartado, cantidad, fecha_abono)
-VALUES (3, 100, GETDATE());
-
-
-
-select * from VentasInfo.Apartado
-
-select * from VentasInfo.Producto_Apartado
-
-select * from VentasInfo.Venta
-
-select * from VentasInfo.Detalle_Venta
