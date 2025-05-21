@@ -385,6 +385,29 @@ BEFORE UPDATE ON VentasInfo.Abono
 FOR EACH ROW
 EXECUTE FUNCTION VentasInfo.trg_validar_update_abono();
 
+--DELETE
+CREATE OR REPLACE FUNCTION VentasInfo.trg_after_delete_abono()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- 1️⃣ Revertir el saldo pendiente sumando el abono eliminado
+    UPDATE VentasInfo.Apartado
+    SET saldo_pendiente = saldo_pendiente + OLD.cantidad
+    WHERE id_apartado = OLD.id_apartado;
+
+    -- 2️⃣ Cambiar el estado a 'En proceso' si había sido liquidado
+    UPDATE VentasInfo.Apartado
+    SET estado = 'En proceso'
+    WHERE id_apartado = OLD.id_apartado AND saldo_pendiente > 0;
+
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_after_delete_abono
+AFTER DELETE ON VentasInfo.Abono
+FOR EACH ROW
+EXECUTE FUNCTION VentasInfo.trg_after_delete_abono();
+
 
 
 -- Trigger para inicializar saldo_pendiente con total_apartado
@@ -762,7 +785,9 @@ VALUES
 
 INSERT INTO ClientesInfo.Tarjeta_Cliente (id_cliente, numero_tarjeta, tipo, banco, codigo_seguridad, fecha_vencimiento)
 VALUES 
-(4, '7070707070707070', 'Crédito', 'Banamex', '002', '2028-05-30')
+(1, '7070707070707070', 'Crédito', 'Banamex', '002', '2028-05-30')
+
+select * from ClientesInfo.Cliente
 
 INSERT INTO ClientesInfo.Tarjeta_Cliente (id_cliente, numero_tarjeta, tipo, banco, codigo_seguridad, fecha_vencimiento)
 VALUES 
@@ -772,21 +797,18 @@ VALUES
 
 INSERT INTO ProductoInfo.Producto (nombre_producto, precio_producto, existencias)
 VALUES 
-('Café Orgánico', 120.50, 50),
-('Té Verde Matcha', 95.00, 80),
-('Pan Artesanal', 45.75, 30);
+('Libreta', 20, 50),
+('Flores rojas', 30.00, 80)
 
 INSERT INTO ProductoInfo.Temporada (nombre, fecha_inicio, fecha_fin)
 VALUES 
 ('Verano 2025', '2025-06-01', '2025-08-31'),
-('Navidad 2025', '2025-12-01', '2025-12-31');
+('Vuelta a clase 2025', '2025-12-01', '2025-12-31');
 
 INSERT INTO ProductoInfo.Producto_Temporada (id_producto, id_temporada)
 VALUES 
-(1, 1), -- Café Orgánico en Verano
-(2, 2), -- Té Verde Matcha en Navidad
-(3, 2); -- Pan Artesanal en Navidad
-
+(1, 2), -- Café Orgánico en Verano
+(2, 1)
 
 SELECT p.id_producto, 
        CONCAT(p.id_producto, ' - ', p.nombre_producto, ' (', t.nombre, ')') AS texto

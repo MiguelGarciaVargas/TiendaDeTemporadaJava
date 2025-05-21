@@ -34,9 +34,42 @@ public class Producto_Apartado extends javax.swing.JFrame {
         initComponents();
         this.idApartado = idApartado;
         this.sePuedeModificar = esModificable;
-        jLabelApartadoId.setText(String.valueOf(idApartado));
+        cargarLabelApartadoInfo();
         cargarTablaProductoApartado();
         bloquearBotonesSiNoModificable();
+    }
+
+    private void cargarLabelApartadoInfo() {
+        try (Connection con = Conexion.conectar()) {
+            String sql = """
+            SELECT a.id_apartado, c.nombre_cliente, a.fecha_vencimiento
+            FROM VentasInfo.Apartado a
+            INNER JOIN ClientesInfo.Tarjeta_Cliente tc ON a.id_tarjeta_cliente = tc.id_tarjeta_cliente
+            INNER JOIN ClientesInfo.Cliente c ON tc.id_cliente = c.id_cliente
+            WHERE a.id_apartado = ?
+        """;
+
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setLong(1, idApartado);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                String nombre = rs.getString("nombre_cliente");
+                Date fecha = rs.getDate("fecha_vencimiento");
+
+                String texto = idApartado
+                        + " - " + nombre
+                        + " [" + fecha + "]";
+                jLabelApartadoId.setText(texto);
+            } else {
+                jLabelApartadoId.setText("Información del apartado no encontrada.");
+            }
+
+            rs.close();
+        } catch (Exception e) {
+            jLabelApartadoId.setText("Error al cargar datos del apartado.");
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -199,7 +232,9 @@ public class Producto_Apartado extends javax.swing.JFrame {
                         .addComponent(jLabel1))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jButtonAgregar, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(480, 480, 480)
+                        .addGap(147, 147, 147)
+                        .addComponent(jButtonEditar1, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(133, 133, 133)
                         .addComponent(jButtonEliminar, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(0, 0, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
@@ -220,11 +255,6 @@ public class Producto_Apartado extends javax.swing.JFrame {
                             .addComponent(jComboBoxProducto, javax.swing.GroupLayout.PREFERRED_SIZE, 218, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabelApartadoId))
                         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                    .addContainerGap(356, Short.MAX_VALUE)
-                    .addComponent(jButtonEditar1, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGap(336, 336, 336)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -249,15 +279,11 @@ public class Producto_Apartado extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 57, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButtonAgregar, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButtonEliminar, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jButtonEliminar, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButtonEditar1, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(33, 33, 33)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                    .addContainerGap(294, Short.MAX_VALUE)
-                    .addComponent(jButtonEditar1, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGap(128, 128, 128)))
         );
 
         pack();
