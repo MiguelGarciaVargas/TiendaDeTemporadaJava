@@ -187,125 +187,133 @@ Go
 
 -- Triggers del MIKE
 -- 1. Comprobar que la cantidad del abono no sea mayor al saldo pendiente
+-- Primero crea la función que será llamada por el trigger
+CREATE OR REPLACE FUNCTION VentasInfo.trg_validar_abono()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Verificar que el abono no exceda el saldo pendiente
+    PERFORM 1
+    FROM VentasInfo.Apartado a
+    WHERE a.id_apartado = NEW.id_apartado
+      AND NEW.cantidad > a.saldo_pendiente;
+
+    IF FOUND THEN
+        RAISE EXCEPTION 'No se puede abonar más de lo que se debe.';
+    END IF;
+
+    -- Si pasa la validación, dejar que el insert continúe
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Ahora crea el trigger que llama a esa función
 CREATE TRIGGER trg_validar_abono
-ON VentasInfo.Abono
-INSTEAD OF INSERT
-AS
+BEFORE INSERT ON VentasInfo.Abono
+FOR EACH ROW
+EXECUTE FUNCTION VentasInfo.trg_validar_abono();
+
+
+--Triggers de Apartado y Producto_Apartado
+--Triggers de Apartado y Producto_Apartado
+--Triggers de Apartado y Producto_Apartado
+--Triggers de Apartado y Producto_Apartado
+-- Función del trigger
+CREATE OR REPLACE FUNCTION VentasInfo.trg_after_insert_producto_apartado()
+RETURNS TRIGGER AS $$
 BEGIN
-    SET NOCOUNT ON;
+    -- 1️⃣ Restar existencias
+    UPDATE ProductoInfo.Producto
+    SET existencias = existencias - NEW.cantidad
+    WHERE id_producto = NEW.id_producto;
 
-    -- Validar cada fila que se intenta insertar
-    IF EXISTS (
-        SELECT 1
-        FROM INSERTED i
-        JOIN VentasInfo.Apartado a ON i.id_apartado = a.id_apartado
-        WHERE i.cantidad > a.saldo_pendiente
-    )
-    BEGIN
-        RAISERROR('No se puede abonar más de lo que se debe.', 16, 1);
-        ROLLBACK TRANSACTION;
-        RETURN;
-    END
-
-    -- Si todo está bien, hacer el insert manual
-    INSERT INTO VentasInfo.Abono (id_apartado, cantidad, fecha_abono)
-    SELECT id_apartado, cantidad, fecha_abono
-    FROM INSERTED;
-END;
-Go
-
-
---DROP TRIGGER VentasInfo.trg_AfterInsertProductoApartado;
---Triggers de Apartado y Producto_Apartado
---Triggers de Apartado y Producto_Apartado
---Triggers de Apartado y Producto_Apartado
---Triggers de Apartado y Producto_Apartado
-CREATE TRIGGER trg_AfterInsertProductoApartado
-ON VentasInfo.Producto_Apartado
-AFTER INSERT
-AS
-BEGIN
-    -- 1️⃣ Restar la cantidad apartada de las existencias del producto
-    UPDATE p
-    SET p.existencias = p.existencias - i.cantidad
+    -- 2️⃣ Aumentar total_apartado y saldo_pendiente
+    UPDATE VentasInfo.Apartado
+    SET total_apartado = total_apartado + (NEW.cantidad * p.precio_producto),
+        saldo_pendiente = saldo_pendiente + (NEW.cantidad * p.precio_producto)
     FROM ProductoInfo.Producto p
-    INNER JOIN inserted i ON p.id_producto = i.id_producto;
+    WHERE VentasInfo.Apartado.id_apartado = NEW.id_apartado
+      AND p.id_producto = NEW.id_producto;
 
-    -- 2️⃣ Aumentar el total y el saldo pendiente del apartado
-   UPDATE a
-	SET 
-		a.total_apartado = a.total_apartado + (i.cantidad * p.precio_producto),
-		a.saldo_pendiente = a.saldo_pendiente + (i.cantidad * p.precio_producto)
-	FROM VentasInfo.Apartado a
-	INNER JOIN inserted i ON a.id_apartado = i.id_apartado
-	INNER JOIN ProductoInfo.Producto p ON i.id_producto = p.id_producto;
-
+    RETURN NULL; -- AFTER triggers retornan NULL
 END;
+$$ LANGUAGE plpgsql;
+
+-- Crear el trigger
+CREATE TRIGGER trg_after_insert_producto_apartado
+AFTER INSERT ON VentasInfo.Producto_Apartado
+FOR EACH ROW
+EXECUTE FUNCTION VentasInfo.trg_after_insert_producto_apartado();
+
 
 
 --DELETE
-CREATE TRIGGER trg_AfterDeleteProductoApartado
-ON VentasInfo.Producto_Apartado
-AFTER DELETE
-AS
+-- Función del trigger
+CREATE OR REPLACE FUNCTION VentasInfo.trg_after_delete_producto_apartado()
+RETURNS TRIGGER AS $$
 BEGIN
     -- 1️⃣ Devolver existencias al producto
-    UPDATE p
-    SET p.existencias = p.existencias + d.cantidad
-    FROM ProductoInfo.Producto p
-    INNER JOIN deleted d ON p.id_producto = d.id_producto;
+    UPDATE ProductoInfo.Producto
+    SET existencias = existencias + OLD.cantidad
+    WHERE id_producto = OLD.id_producto;
 
-    -- 2️⃣ Aumentar el total y el saldo pendiente del apartado
-    UPDATE a
-	SET 
-	a.total_apartado = a.total_apartado - d.subtotal_apartado,
-	a.saldo_pendiente = a.saldo_pendiente - d.subtotal_apartado
-	FROM VentasInfo.Apartado a
-	INNER JOIN deleted d ON a.id_apartado = d.id_apartado;
+    -- 2️⃣ Restar al total_apartado y saldo_pendiente
+    UPDATE VentasInfo.Apartado
+    SET total_apartado = total_apartado - OLD.subtotal_apartado,
+        saldo_pendiente = saldo_pendiente - OLD.subtotal_apartado
+    WHERE id_apartado = OLD.id_apartado;
 
+    RETURN NULL; -- AFTER triggers retornan NULL
 END;
+$$ LANGUAGE plpgsql;
+
+-- Crear el trigger
+CREATE TRIGGER trg_after_delete_producto_apartado
+AFTER DELETE ON VentasInfo.Producto_Apartado
+FOR EACH ROW
+EXECUTE FUNCTION VentasInfo.trg_after_delete_producto_apartado();
+
 
 
 --UPDATE
-CREATE TRIGGER trg_AfterUpdateProductoApartado
-ON VentasInfo.Producto_Apartado
-AFTER UPDATE
-AS
+-- Función del trigger
+CREATE OR REPLACE FUNCTION VentasInfo.trg_after_update_producto_apartado()
+RETURNS TRIGGER AS $$
 BEGIN
-    -- 1️⃣ Si el producto cambió: devolver existencias al anterior y restar al nuevo
-    UPDATE p
-    SET p.existencias = p.existencias + d.cantidad
-    FROM ProductoInfo.Producto p
-    INNER JOIN deleted d ON p.id_producto = d.id_producto
-    INNER JOIN inserted i ON d.id_apartado = i.id_apartado
-    WHERE d.id_producto <> i.id_producto;
+    -- 1️⃣ Si cambió el producto: reponer existencias al viejo y descontar al nuevo
+    IF OLD.id_producto <> NEW.id_producto THEN
+        -- Reponer al anterior
+        UPDATE ProductoInfo.Producto
+        SET existencias = existencias + OLD.cantidad
+        WHERE id_producto = OLD.id_producto;
 
-    UPDATE p
-    SET p.existencias = p.existencias - i.cantidad
-    FROM ProductoInfo.Producto p
-    INNER JOIN inserted i ON p.id_producto = i.id_producto
-    INNER JOIN deleted d ON i.id_apartado = d.id_apartado
-    WHERE d.id_producto <> i.id_producto;
+        -- Descontar al nuevo
+        UPDATE ProductoInfo.Producto
+        SET existencias = existencias - NEW.cantidad
+        WHERE id_producto = NEW.id_producto;
+    ELSIF OLD.cantidad <> NEW.cantidad THEN
+        -- 2️⃣ Si solo cambió la cantidad (mismo producto), ajustar diferencia
+        UPDATE ProductoInfo.Producto
+        SET existencias = existencias + OLD.cantidad - NEW.cantidad
+        WHERE id_producto = NEW.id_producto;
+    END IF;
 
-    -- 2️⃣ Si solo cambió la cantidad (mismo producto), ajustar la diferencia
-    UPDATE p
-    SET p.existencias = p.existencias + d.cantidad - i.cantidad
+    -- 3️⃣ Recalcular total_apartado y saldo_pendiente
+    UPDATE VentasInfo.Apartado
+    SET total_apartado = total_apartado - OLD.subtotal_apartado + (NEW.cantidad * p.precio_producto),
+        saldo_pendiente = saldo_pendiente - OLD.subtotal_apartado + (NEW.cantidad * p.precio_producto)
     FROM ProductoInfo.Producto p
-    INNER JOIN inserted i ON p.id_producto = i.id_producto
-    INNER JOIN deleted d ON i.id_apartado = d.id_apartado
-    WHERE d.id_producto = i.id_producto AND d.cantidad <> i.cantidad;
+    WHERE VentasInfo.Apartado.id_apartado = NEW.id_apartado
+      AND p.id_producto = NEW.id_producto;
 
-    -- 3️⃣ Ajustar total_apartado y saldo_pendiente
-    -- Restamos el subtotal anterior y sumamos el nuevo
-    UPDATE a
-    SET 
-        a.total_apartado = a.total_apartado - d.subtotal_apartado + (i.cantidad * p.precio_producto),
-        a.saldo_pendiente = a.saldo_pendiente - d.subtotal_apartado + (i.cantidad * p.precio_producto)
-    FROM VentasInfo.Apartado a
-    INNER JOIN inserted i ON a.id_apartado = i.id_apartado
-    INNER JOIN deleted d ON i.id_apartado = d.id_apartado
-    INNER JOIN ProductoInfo.Producto p ON i.id_producto = p.id_producto;
+    RETURN NULL; -- AFTER triggers retornan NULL
 END;
+$$ LANGUAGE plpgsql;
+
+-- Crear el trigger
+CREATE TRIGGER trg_after_update_producto_apartado
+AFTER UPDATE ON VentasInfo.Producto_Apartado
+FOR EACH ROW
+EXECUTE FUNCTION VentasInfo.trg_after_update_producto_apartado();
 
 
 
@@ -314,73 +322,90 @@ END;
 --Triggers de Apartado y Producto_Apartado
 --Triggers de Apartado y Producto_Apartado
 -- 2. Actualizar saldo pendiente tras un abono
-CREATE TRIGGER trg_AfterInsertAbono
-ON VentasInfo.Abono
-AFTER INSERT
-AS
-BEGIN
-    UPDATE VentasInfo.Apartado
-    SET saldo_pendiente = saldo_pendiente - i.cantidad
-    FROM VentasInfo.Apartado a
-    INNER JOIN inserted i ON a.id_apartado = i.id_apartado;
+-- Función del trigger
+-- DROP TRIGGER IF EXISTS trg_after_insert_abono ON VentasInfo.Abono;
 
-	-- Si el saldo pendiente llega a 0, cambiar el estado a "Liquidado"
-    UPDATE VentasInfo.Apartado
+CREATE OR REPLACE FUNCTION VentasInfo.trg_after_insert_abono()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- 1️⃣ Descontar el abono del saldo pendiente
+    UPDATE VentasInfo.Apartado v
+    SET saldo_pendiente = v.saldo_pendiente - NEW.cantidad
+    WHERE v.id_apartado = NEW.id_apartado;
+
+    -- 2️⃣ Marcar como "Liquidado" si ya no se debe nada
+    UPDATE VentasInfo.Apartado v
     SET estado = 'Liquidado'
-    WHERE saldo_pendiente = 0;
+    WHERE v.id_apartado = NEW.id_apartado AND v.saldo_pendiente = 0;
+
+    RETURN NULL;
 END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger
+CREATE TRIGGER trg_after_insert_abono
+AFTER INSERT ON VentasInfo.Abono
+FOR EACH ROW
+EXECUTE FUNCTION VentasInfo.trg_after_insert_abono();
 
 
-
-CREATE TRIGGER trg_ValidarUpdateAbono
-ON VentasInfo.Abono
-INSTEAD OF UPDATE
-AS
+-- Función del trigger
+CREATE OR REPLACE FUNCTION VentasInfo.trg_validar_update_abono()
+RETURNS TRIGGER AS $$
+DECLARE
+    saldo_actual DECIMAL(10,2);
 BEGIN
-    SET NOCOUNT ON;
+    -- Obtener el saldo pendiente actual del apartado
+    SELECT saldo_pendiente INTO saldo_actual
+    FROM VentasInfo.Apartado
+    WHERE id_apartado = NEW.id_apartado;
 
-    -- Validar que la nueva cantidad no exceda el saldo real
-    IF EXISTS (
-        SELECT 1
-        FROM inserted i
-        JOIN deleted d ON i.id_abono = d.id_abono
-        JOIN VentasInfo.Apartado a ON i.id_apartado = a.id_apartado
-        WHERE i.cantidad > (a.saldo_pendiente + d.cantidad)
-    )
-    BEGIN
-        RAISERROR('No puedes actualizar el abono a una cantidad mayor al saldo pendiente.', 16, 1);
-        ROLLBACK TRANSACTION;
-        RETURN;
-    END
+    -- Validar que el nuevo abono no exceda el saldo permitido (saldo + lo que ya tenía)
+    IF NEW.cantidad > (saldo_actual + OLD.cantidad) THEN
+        RAISE EXCEPTION 'No puedes actualizar el abono a una cantidad mayor al saldo pendiente.';
+    END IF;
 
-    -- Hacer el update del abono
-    UPDATE ab
-    SET ab.cantidad = i.cantidad,
-        ab.fecha_abono = i.fecha_abono
-    FROM VentasInfo.Abono ab
-    JOIN inserted i ON ab.id_abono = i.id_abono;
+    -- Actualizar el saldo del apartado
+    UPDATE VentasInfo.Apartado
+    SET saldo_pendiente = saldo_pendiente - (NEW.cantidad - OLD.cantidad),
+        estado = CASE 
+                    WHEN saldo_pendiente - (NEW.cantidad - OLD.cantidad) = 0 
+                    THEN 'Liquidado' 
+                    ELSE estado 
+                 END
+    WHERE id_apartado = NEW.id_apartado;
 
-    -- Recalcular el saldo pendiente con la diferencia
-    UPDATE a
-    SET saldo_pendiente = saldo_pendiente - (i.cantidad - d.cantidad),
-        estado = CASE WHEN saldo_pendiente - (i.cantidad - d.cantidad) = 0 THEN 'Liquidado' ELSE estado END
-    FROM VentasInfo.Apartado a
-    JOIN inserted i ON a.id_apartado = i.id_apartado
-    JOIN deleted d ON d.id_abono = i.id_abono;
+    RETURN NEW;
 END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger
+CREATE TRIGGER trg_validar_update_abono
+BEFORE UPDATE ON VentasInfo.Abono
+FOR EACH ROW
+EXECUTE FUNCTION VentasInfo.trg_validar_update_abono();
+
 
 
 -- Trigger para inicializar saldo_pendiente con total_apartado
-CREATE TRIGGER trg_SetSaldoPendiente
-ON VentasInfo.Apartado
-AFTER INSERT
-AS
+-- Función del trigger
+CREATE OR REPLACE FUNCTION VentasInfo.trg_set_saldo_pendiente()
+RETURNS TRIGGER AS $$
 BEGIN
-    UPDATE a
-    SET a.saldo_pendiente = a.total_apartado
-    FROM VentasInfo.Apartado a
-    INNER JOIN inserted i ON a.id_apartado = i.id_apartado;
+    UPDATE VentasInfo.Apartado
+    SET saldo_pendiente = NEW.total_apartado
+    WHERE id_apartado = NEW.id_apartado;
+
+    RETURN NULL;
 END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger
+CREATE TRIGGER trg_set_saldo_pendiente
+AFTER INSERT ON VentasInfo.Apartado
+FOR EACH ROW
+EXECUTE FUNCTION VentasInfo.trg_set_saldo_pendiente();
+
 
 
 
@@ -391,76 +416,61 @@ END;
 --LISTO--LISTO--LISTO--LISTO--LISTO--LISTO--LISTO--LISTO--LISTO--LISTO
 --LISTO--LISTO--LISTO--LISTO--LISTO--LISTO--LISTO--LISTO--LISTO--LISTO
 
-IF OBJECT_ID('VentasInfo.trg_UpdateApartadoToLiquidado', 'TR') IS NOT NULL
-    DROP TRIGGER VentasInfo.trg_UpdateApartadoToLiquidado;
+-- Creamos la función corregida
+DROP TRIGGER IF EXISTS trg_update_apartado_to_liquidado ON VentasInfo.Apartado;
 
-
-CREATE TRIGGER trg_UpdateApartadoToLiquidado
-ON VentasInfo.Apartado
-AFTER UPDATE
-AS
+CREATE OR REPLACE FUNCTION VentasInfo.trg_update_apartado_to_liquidado()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_id_apartado BIGINT;
+    v_id_tarjeta_cliente BIGINT;
+    v_total_apartado NUMERIC(10, 2);
+    v_id_venta BIGINT;
 BEGIN
-    SET NOCOUNT ON;
+    -- Verificar si el estado cambió a 'Liquidado'
+    IF NEW.estado = 'Liquidado' AND OLD.estado <> 'Liquidado' THEN
+        v_id_apartado := NEW.id_apartado;
+        v_id_tarjeta_cliente := NEW.id_tarjeta_cliente;
+        v_total_apartado := NEW.total_apartado;
 
-    -- Verificamos que SOLO se haya cambiado un apartado a 'Liquidado'
-    IF EXISTS (
-        SELECT 1 
-        FROM inserted i
-        JOIN deleted d ON i.id_apartado = d.id_apartado
-        WHERE i.estado = 'Liquidado' AND d.estado <> 'Liquidado'
-    )
-    BEGIN
-        DECLARE @id_apartado BIGINT;
-        DECLARE @id_tarjeta_cliente BIGINT;
-        DECLARE @total_apartado DECIMAL(10, 2);
-        DECLARE @id_venta BIGINT;
-
-        -- Obtenemos los datos del apartado que se acaba de liquidar
-        SELECT 
-            @id_apartado = i.id_apartado,
-            @id_tarjeta_cliente = i.id_tarjeta_cliente,
-            @total_apartado = i.total_apartado
-        FROM inserted i
-        JOIN deleted d ON i.id_apartado = d.id_apartado
-        WHERE i.estado = 'Liquidado' AND d.estado <> 'Liquidado';
-
-        -- Reponer existencias antes de convertir el producto apartado a venta
-        UPDATE p
-        SET p.existencias = p.existencias + pa.cantidad
-        FROM ProductoInfo.Producto p
-        INNER JOIN VentasInfo.Producto_Apartado pa ON p.id_producto = pa.id_producto
-        WHERE pa.id_apartado = @id_apartado;
-
-        -- Insertamos en Venta
-        INSERT INTO VentasInfo.Venta (id_tarjeta_cliente, fecha_venta, total_venta)
-        VALUES (@id_tarjeta_cliente, GETDATE(), 0);
-
-        -- Capturamos el ID de venta recién generado
-        SET @id_venta = SCOPE_IDENTITY();
-
-        -- Insertamos los productos del apartado en Detalle_Venta
-        INSERT INTO VentasInfo.Detalle_Venta (id_venta, id_producto_temporada, cantidad, subtotal_venta)
-        SELECT 
-            @id_venta, 
-            pt.id_producto_temporada, 
-            pa.cantidad, 
-            pa.subtotal_apartado
+        -- Reponer existencias
+        UPDATE ProductoInfo.Producto p
+        SET existencias = p.existencias + pa.cantidad
         FROM VentasInfo.Producto_Apartado pa
-        JOIN ProductoInfo.Producto_Temporada pt 
-            ON pt.id_producto = pa.id_producto
-        WHERE pa.id_apartado = @id_apartado;
+        WHERE p.id_producto = pa.id_producto
+          AND pa.id_apartado = v_id_apartado;
 
-		        -- 🧮 Actualizamos el total_venta basado en los subtotales insertados
-        UPDATE v
+        -- Insertar en Venta
+        INSERT INTO VentasInfo.Venta (id_tarjeta_cliente, fecha_venta, total_venta)
+        VALUES (v_id_tarjeta_cliente, CURRENT_DATE, 0)
+        RETURNING id_venta INTO v_id_venta;
+
+        -- Insertar en Detalle_Venta
+        INSERT INTO VentasInfo.Detalle_Venta (id_venta, id_producto_temporada, cantidad, subtotal_venta)
+        SELECT v_id_venta, pt.id_producto_temporada, pa.cantidad, pa.subtotal_apartado
+        FROM VentasInfo.Producto_Apartado pa
+        JOIN ProductoInfo.Producto_Temporada pt ON pt.id_producto = pa.id_producto
+        WHERE pa.id_apartado = v_id_apartado;
+
+        -- Actualizar total_venta
+        UPDATE VentasInfo.Venta
         SET total_venta = (
-            SELECT SUM(dv.subtotal_venta)
-            FROM VentasInfo.Detalle_Venta dv
-            WHERE dv.id_venta = v.id_venta
+            SELECT SUM(subtotal_venta)
+            FROM VentasInfo.Detalle_Venta
+            WHERE id_venta = v_id_venta
         )
-        FROM VentasInfo.Venta v
-        WHERE v.id_venta = @id_venta;
-    END;
+        WHERE id_venta = v_id_venta;
+    END IF;
+
+    RETURN NEW;
 END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE TRIGGER trg_update_apartado_to_liquidado
+AFTER UPDATE ON VentasInfo.Apartado
+FOR EACH ROW
+EXECUTE FUNCTION VentasInfo.trg_update_apartado_to_liquidado();
 
 
 
@@ -783,4 +793,9 @@ SELECT p.id_producto,
 FROM ProductoInfo.Producto_Temporada pt
 JOIN ProductoInfo.Producto p ON pt.id_producto = p.id_producto
 JOIN ProductoInfo.Temporada t ON pt.id_temporada = t.id_temporada;
+
+select * from VentasInfo.Venta
+
+select * from VentasInfo.Detalle_Venta
+
 

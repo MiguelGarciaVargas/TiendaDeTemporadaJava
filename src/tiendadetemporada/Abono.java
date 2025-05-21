@@ -4,17 +4,40 @@
  */
 package tiendadetemporada;
 
+import javax.swing.table.DefaultTableModel;
+import java.sql.*;
+import javax.swing.JOptionPane;
+import java.text.SimpleDateFormat;
+import java.util.Locale;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Date;
+
 /**
  *
  * @author migue
  */
 public class Abono extends javax.swing.JFrame {
 
+    private long idApartado;
+    private boolean modificable;
+    private long idAbonoSeleccionado = -1;
+
     /**
      * Creates new form Abono
      */
     public Abono(long idApartado, boolean modificable) {
         initComponents();
+        this.idApartado = idApartado;
+        this.modificable = modificable;
+
+        jButtonAgregar.setVisible(modificable);
+        jButtonEditar.setVisible(modificable);
+        jButtonEliminar.setVisible(modificable);
+        jSpinnerCantidad.setEnabled(modificable);
+
+        jLabelApartadoId.setText("ID #" + idApartado);
+        cargarTablaAbonos();
     }
 
     /**
@@ -36,6 +59,7 @@ public class Abono extends javax.swing.JFrame {
         jLabel3 = new javax.swing.JLabel();
         jButtonEliminar = new javax.swing.JButton();
         jSpinnerCantidad = new javax.swing.JSpinner();
+        jButtonRegresar = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -132,6 +156,16 @@ public class Abono extends javax.swing.JFrame {
 
         jSpinnerCantidad.setFont(new java.awt.Font("Century Gothic", 1, 18)); // NOI18N
 
+        jButtonRegresar.setBackground(new java.awt.Color(0, 102, 255));
+        jButtonRegresar.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        jButtonRegresar.setForeground(new java.awt.Color(255, 255, 255));
+        jButtonRegresar.setText("Regresar");
+        jButtonRegresar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonRegresarActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -142,7 +176,7 @@ public class Abono extends javax.swing.JFrame {
                         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 880, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addGroup(layout.createSequentialGroup()
                                 .addContainerGap()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -162,8 +196,11 @@ public class Abono extends javax.swing.JFrame {
                                     .addComponent(jLabel3))
                                 .addGap(23, 23, 23)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jSpinnerCantidad, javax.swing.GroupLayout.PREFERRED_SIZE, 251, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jLabelApartadoId))))
+                                    .addComponent(jLabelApartadoId)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(jSpinnerCantidad, javax.swing.GroupLayout.PREFERRED_SIZE, 251, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addComponent(jButtonRegresar, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)))))
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -176,10 +213,11 @@ public class Abono extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel6)
                     .addComponent(jLabelApartadoId))
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jLabel3)
-                    .addComponent(jSpinnerCantidad, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jSpinnerCantidad, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButtonRegresar, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(26, 26, 26)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButtonAgregar, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -187,41 +225,155 @@ public class Abono extends javax.swing.JFrame {
                     .addComponent(jButtonEditar, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(33, 33, 33)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(37, Short.MAX_VALUE))
+                .addContainerGap(36, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButtonEditarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonEditarActionPerformed
-        
+        if (idAbonoSeleccionado == -1) {
+            JOptionPane.showMessageDialog(null, "Selecciona un abono primero.");
+            return;
+        }
+
+        int nuevaCantidad = (int) jSpinnerCantidad.getValue();
+        if (nuevaCantidad <= 0) {
+            JOptionPane.showMessageDialog(null, "Cantidad inválida.");
+            return;
+        }
+
+        try {
+            Connection con = Conexion.conectar();
+            String sql = "UPDATE VentasInfo.Abono SET cantidad = ? WHERE id_abono = ?";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setFloat(1, nuevaCantidad);
+            ps.setLong(2, idAbonoSeleccionado);
+            ps.executeUpdate();
+            ps.close();
+            con.close();
+            JOptionPane.showMessageDialog(null, "Abono actualizado.");
+            cargarTablaAbonos();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error al actualizar abono: " + e.getMessage());
+        }
     }//GEN-LAST:event_jButtonEditarActionPerformed
 
     private void jButtonAgregarMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jButtonAgregarMouseClicked
         // TODO add your handling code here:
+        int cantidad = (int) jSpinnerCantidad.getValue();
+        if (cantidad <= 0) {
+            JOptionPane.showMessageDialog(null, "La cantidad debe ser mayor a 0.");
+            return;
+        }
+
+        try {
+            Connection con = Conexion.conectar();
+            String sql = "INSERT INTO VentasInfo.Abono(id_apartado, cantidad, fecha_abono) VALUES (?, ?, ?)";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setLong(1, idApartado);
+            ps.setFloat(2, cantidad);
+            ps.setDate(3, new java.sql.Date(new java.util.Date().getTime()));
+            ps.executeUpdate();
+            ps.close();
+            con.close();
+            JOptionPane.showMessageDialog(null, "Abono agregado correctamente.");
+            cargarTablaAbonos();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error al agregar abono: " + e.getMessage());
+        }
     }//GEN-LAST:event_jButtonAgregarMouseClicked
 
     private void jButtonAgregarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonAgregarActionPerformed
-        // TODO add your handling code here:
+        // TODO add your handling code here:'
+        int cantidad = (int) jSpinnerCantidad.getValue();
+        if (cantidad <= 0) {
+            JOptionPane.showMessageDialog(null, "La cantidad debe ser mayor a 0.");
+            return;
+        }
+
+        try {
+            Connection con = Conexion.conectar();
+            String sql = "INSERT INTO VentasInfo.Abono(id_apartado, cantidad, fecha_abono) VALUES (?, ?, ?)";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setLong(1, idApartado);
+            ps.setFloat(2, cantidad);
+            ps.setDate(3, new java.sql.Date(new java.util.Date().getTime()));
+            ps.executeUpdate();
+            ps.close();
+            con.close();
+            JOptionPane.showMessageDialog(null, "Abono agregado correctamente.");
+            cargarTablaAbonos();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error al agregar abono: " + e.getMessage());
+        }
 
     }//GEN-LAST:event_jButtonAgregarActionPerformed
 
     private void TableAbonoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_TableAbonoMouseClicked
         // TODO add your handling code here:
         int fila = TableAbono.getSelectedRow();
-
         if (fila >= 0) {
-            
-            Integer existencias = Integer.parseInt(TableAbono.getValueAt(fila, 3).toString());
-            jSpinnerCantidad.setValue(existencias);
-
+            idAbonoSeleccionado = Long.parseLong(TableAbono.getValueAt(fila, 0).toString());
+            float cantidad = Float.parseFloat(TableAbono.getValueAt(fila, 1).toString());
+            jSpinnerCantidad.setValue((int) cantidad);
         }
     }//GEN-LAST:event_TableAbonoMouseClicked
 
     private void jButtonEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonEliminarActionPerformed
-        // TODO add your handling code here:
+        if (idAbonoSeleccionado == -1) {
+            JOptionPane.showMessageDialog(null, "Selecciona un abono primero.");
+            return;
+        }
 
+        try {
+            Connection con = Conexion.conectar();
+            String sql = "DELETE FROM VentasInfo.Abono WHERE id_abono = ?";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setLong(1, idAbonoSeleccionado);
+            ps.executeUpdate();
+            ps.close();
+            con.close();
+            JOptionPane.showMessageDialog(null, "Abono eliminado.");
+            cargarTablaAbonos();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error al eliminar abono: " + e.getMessage());
+        }
     }//GEN-LAST:event_jButtonEliminarActionPerformed
+
+    private void jButtonRegresarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonRegresarActionPerformed
+        Apartado ventanaApartado = new Apartado();
+        ventanaApartado.setVisible(true);
+        this.dispose();
+    }//GEN-LAST:event_jButtonRegresarActionPerformed
+
+    private void cargarTablaAbonos() {
+        try {
+            Connection con = Conexion.conectar();
+            String sql = "SELECT id_abono, cantidad, fecha_abono FROM VentasInfo.Abono WHERE id_apartado = ?";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setLong(1, idApartado);
+            ResultSet rs = ps.executeQuery();
+
+            DefaultTableModel model = (DefaultTableModel) TableAbono.getModel();
+            model.setRowCount(0);
+            while (rs.next()) {
+                Object[] fila = {
+                    rs.getLong("id_abono"),
+                    rs.getFloat("cantidad"),
+                    rs.getDate("fecha_abono")
+                };
+                model.addRow(fila);
+            }
+
+            jSpinnerCantidad.setValue(0);
+            idAbonoSeleccionado = -1;
+            rs.close();
+            con.close();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error al cargar los abonos: " + e.getMessage());
+        }
+    }
 
     /**
      * @param args the command line arguments
@@ -263,6 +415,7 @@ public class Abono extends javax.swing.JFrame {
     private javax.swing.JButton jButtonAgregar;
     private javax.swing.JButton jButtonEditar;
     private javax.swing.JButton jButtonEliminar;
+    private javax.swing.JButton jButtonRegresar;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel6;

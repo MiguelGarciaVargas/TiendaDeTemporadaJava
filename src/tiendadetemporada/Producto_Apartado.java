@@ -50,7 +50,7 @@ public class Producto_Apartado extends javax.swing.JFrame {
 
         jLabel3 = new javax.swing.JLabel();
         jButtonEliminar = new javax.swing.JButton();
-        jButtonEditar = new javax.swing.JButton();
+        jButtonRegresar = new javax.swing.JButton();
         jButtonAgregar = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         TableApartado = new javax.swing.JTable();
@@ -60,6 +60,7 @@ public class Producto_Apartado extends javax.swing.JFrame {
         jLabel7 = new javax.swing.JLabel();
         jSpinnerCantidad = new javax.swing.JSpinner();
         jLabelApartadoId = new javax.swing.JLabel();
+        jButtonEditar1 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -77,13 +78,13 @@ public class Producto_Apartado extends javax.swing.JFrame {
             }
         });
 
-        jButtonEditar.setBackground(new java.awt.Color(0, 102, 255));
-        jButtonEditar.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        jButtonEditar.setForeground(new java.awt.Color(255, 255, 255));
-        jButtonEditar.setText("Editar");
-        jButtonEditar.addActionListener(new java.awt.event.ActionListener() {
+        jButtonRegresar.setBackground(new java.awt.Color(0, 102, 255));
+        jButtonRegresar.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        jButtonRegresar.setForeground(new java.awt.Color(255, 255, 255));
+        jButtonRegresar.setText("Regresar");
+        jButtonRegresar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButtonEditarActionPerformed(evt);
+                jButtonRegresarActionPerformed(evt);
             }
         });
 
@@ -172,42 +173,58 @@ public class Producto_Apartado extends javax.swing.JFrame {
         jLabelApartadoId.setForeground(new java.awt.Color(0, 102, 255));
         jLabelApartadoId.setText("_");
 
+        jButtonEditar1.setBackground(new java.awt.Color(0, 102, 255));
+        jButtonEditar1.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        jButtonEditar1.setForeground(new java.awt.Color(255, 255, 255));
+        jButtonEditar1.setText("Editar");
+        jButtonEditar1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonEditar1ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 880, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 880, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(367, 367, 367)
+                        .addComponent(jLabel1))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jButtonAgregar, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(480, 480, 480)
+                        .addComponent(jButtonEliminar, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(0, 0, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addGap(19, 19, 19)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel6)
+                    .addComponent(jLabel3)
+                    .addComponent(jLabel7))
+                .addGap(23, 23, 23)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jSpinnerCantidad, javax.swing.GroupLayout.PREFERRED_SIZE, 251, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jButtonRegresar, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap())
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addContainerGap()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addGap(367, 367, 367)
-                                        .addComponent(jLabel1))
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(jButtonAgregar, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(140, 140, 140)
-                                        .addComponent(jButtonEditar, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(140, 140, 140)
-                                        .addComponent(jButtonEliminar, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(19, 19, 19)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel6)
-                                    .addComponent(jLabel3)
-                                    .addComponent(jLabel7))
-                                .addGap(23, 23, 23)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jComboBoxProducto, javax.swing.GroupLayout.PREFERRED_SIZE, 218, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jSpinnerCantidad, javax.swing.GroupLayout.PREFERRED_SIZE, 251, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jLabelApartadoId))))
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
+                            .addComponent(jComboBoxProducto, javax.swing.GroupLayout.PREFERRED_SIZE, 218, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabelApartadoId))
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                    .addContainerGap(356, Short.MAX_VALUE)
+                    .addComponent(jButtonEditar1, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGap(336, 336, 336)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -215,26 +232,32 @@ public class Producto_Apartado extends javax.swing.JFrame {
                 .addGap(24, 24, 24)
                 .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(11, 11, 11)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel6)
-                    .addComponent(jLabelApartadoId))
-                .addGap(24, 24, 24)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel6)
+                            .addComponent(jLabelApartadoId))
+                        .addGap(24, 24, 24)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jComboBoxProducto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel7))
                         .addGap(29, 29, 29)
                         .addComponent(jLabel3))
-                    .addComponent(jSpinnerCantidad, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jSpinnerCantidad, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jButtonRegresar, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 57, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButtonAgregar, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButtonEliminar, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButtonEditar, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jButtonEliminar, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(33, 33, 33)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                    .addContainerGap(294, Short.MAX_VALUE)
+                    .addComponent(jButtonEditar1, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGap(128, 128, 128)))
         );
 
         pack();
@@ -265,64 +288,11 @@ public class Producto_Apartado extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_jButtonEliminarActionPerformed
 
-    private void jButtonEditarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonEditarActionPerformed
-        if (selectedProductoId == -1) {
-            JOptionPane.showMessageDialog(null, "Selecciona un producto de la tabla.");
-            return;
-        }
-
-        String seleccion = (String) jComboBoxProducto.getSelectedItem();
-        if (seleccion == null || !mapProductos.containsKey(seleccion)) {
-            JOptionPane.showMessageDialog(null, "Selecciona un producto válido.");
-            return;
-        }
-
-        long nuevoId = mapProductos.get(seleccion);
-        int nuevaCantidad = (int) jSpinnerCantidad.getValue();
-
-        if (nuevaCantidad <= 0) {
-            JOptionPane.showMessageDialog(null, "La cantidad debe ser mayor a 0.");
-            return;
-        }
-
-        try {
-            Connection con = Conexion.conectar();
-            String sqlPrecio = "SELECT existencias, precio_producto FROM ProductoInfo.Producto WHERE id_producto = ?";
-            PreparedStatement ps = con.prepareStatement(sqlPrecio);
-            ps.setLong(1, nuevoId);
-            ResultSet rs = ps.executeQuery();
-
-            if (rs.next()) {
-                int existencias = rs.getInt("existencias");
-                float precio = rs.getFloat("precio_producto");
-
-                int disponibles = existencias + (nuevoId == selectedProductoId ? cantidadAnterior : 0);
-
-                if (nuevaCantidad > disponibles) {
-                    JOptionPane.showMessageDialog(null, "No hay suficientes existencias.");
-                    return;
-                }
-
-                float subtotal = precio * nuevaCantidad;
-
-                String update = "UPDATE VentasInfo.Producto_Apartado "
-                        + "SET id_producto = ?, cantidad = ?, subtotal_apartado = ? "
-                        + "WHERE id_apartado = ? AND id_producto = ?";
-                ps = con.prepareStatement(update);
-                ps.setLong(1, nuevoId);
-                ps.setInt(2, nuevaCantidad);
-                ps.setFloat(3, subtotal);
-                ps.setLong(4, idApartado);
-                ps.setLong(5, selectedProductoId);
-                ps.executeUpdate();
-                JOptionPane.showMessageDialog(null, "Producto actualizado.");
-                cargarTablaProductoApartado();
-            }
-            con.close();
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "Error al actualizar: ");
-        }
-    }//GEN-LAST:event_jButtonEditarActionPerformed
+    private void jButtonRegresarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonRegresarActionPerformed
+        Apartado ventanaApartado = new Apartado();
+        ventanaApartado.setVisible(true);
+        this.dispose();
+    }//GEN-LAST:event_jButtonRegresarActionPerformed
 
     private void jButtonAgregarMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jButtonAgregarMouseClicked
         // TODO add your handling code here:
@@ -398,9 +368,68 @@ public class Producto_Apartado extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_jComboBoxProductoActionPerformed
 
+    private void jButtonEditar1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonEditar1ActionPerformed
+        if (selectedProductoId == -1) {
+            JOptionPane.showMessageDialog(null, "Selecciona un producto de la tabla.");
+            return;
+        }
+
+        String seleccion = (String) jComboBoxProducto.getSelectedItem();
+        if (seleccion == null || !mapProductos.containsKey(seleccion)) {
+            JOptionPane.showMessageDialog(null, "Selecciona un producto válido.");
+            return;
+        }
+
+        long nuevoId = mapProductos.get(seleccion);
+        int nuevaCantidad = (int) jSpinnerCantidad.getValue();
+
+        if (nuevaCantidad <= 0) {
+            JOptionPane.showMessageDialog(null, "La cantidad debe ser mayor a 0.");
+            return;
+        }
+
+        try {
+            Connection con = Conexion.conectar();
+            String sqlPrecio = "SELECT existencias, precio_producto FROM ProductoInfo.Producto WHERE id_producto = ?";
+            PreparedStatement ps = con.prepareStatement(sqlPrecio);
+            ps.setLong(1, nuevoId);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                int existencias = rs.getInt("existencias");
+                float precio = rs.getFloat("precio_producto");
+
+                int disponibles = existencias + (nuevoId == selectedProductoId ? cantidadAnterior : 0);
+
+                if (nuevaCantidad > disponibles) {
+                    JOptionPane.showMessageDialog(null, "No hay suficientes existencias.");
+                    return;
+                }
+
+                float subtotal = precio * nuevaCantidad;
+
+                String update = "UPDATE VentasInfo.Producto_Apartado "
+                        + "SET id_producto = ?, cantidad = ?, subtotal_apartado = ? "
+                        + "WHERE id_apartado = ? AND id_producto = ?";
+                ps = con.prepareStatement(update);
+                ps.setLong(1, nuevoId);
+                ps.setInt(2, nuevaCantidad);
+                ps.setFloat(3, subtotal);
+                ps.setLong(4, idApartado);
+                ps.setLong(5, selectedProductoId);
+                ps.executeUpdate();
+                JOptionPane.showMessageDialog(null, "Producto actualizado.");
+                cargarTablaProductoApartado();
+            }
+            con.close();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error al actualizar: ");
+        }
+    }//GEN-LAST:event_jButtonEditar1ActionPerformed
+
     private void bloquearBotonesSiNoModificable() {
         jButtonAgregar.setVisible(sePuedeModificar);
-        jButtonEditar.setVisible(sePuedeModificar);
+        jButtonRegresar.setVisible(sePuedeModificar);
         jButtonEliminar.setVisible(sePuedeModificar);
         jComboBoxProducto.setEnabled(sePuedeModificar);
         jSpinnerCantidad.setEnabled(sePuedeModificar);
@@ -437,7 +466,48 @@ public class Producto_Apartado extends javax.swing.JFrame {
         }
     }
 
+    private void cargarTablaProductoApartado() {
+        cargarComboProductos();
 
+        try (Connection con = Conexion.conectar()) {
+            String sql = """
+            SELECT pa.id_producto,
+                   CONCAT(pt.id_producto_temporada, ' - ', p.nombre_producto, ' (', t.nombre, ')') AS producto,
+                   pa.cantidad
+            FROM VentasInfo.Producto_Apartado pa
+            JOIN ProductoInfo.Producto p ON pa.id_producto = p.id_producto
+            JOIN ProductoInfo.Producto_Temporada pt ON p.id_producto = pt.id_producto
+            JOIN ProductoInfo.Temporada t ON pt.id_temporada = t.id_temporada
+            WHERE pa.id_apartado = ?
+        """;
+
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setLong(1, idApartado);
+            ResultSet rs = ps.executeQuery();
+
+            DefaultTableModel model = (DefaultTableModel) TableApartado.getModel();
+            model.setRowCount(0);
+
+            while (rs.next()) {
+                Object[] fila = {
+                    rs.getLong("id_producto"),
+                    rs.getString("producto"),
+                    rs.getInt("cantidad")
+                };
+                model.addRow(fila);
+            }
+
+            rs.close();
+            selectedProductoId = -1;
+            productoSeleccionado = -1;
+            jComboBoxProducto.setSelectedIndex(-1);
+            jSpinnerCantidad.setValue(1);
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error al cargar productos del apartado:\n" + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 
     private float obtenerPrecioSiHayStock(long idProducto, int cantidad) {
         try (Connection con = Conexion.conectar()) {
@@ -525,8 +595,9 @@ public class Producto_Apartado extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTable TableApartado;
     private javax.swing.JButton jButtonAgregar;
-    private javax.swing.JButton jButtonEditar;
+    private javax.swing.JButton jButtonEditar1;
     private javax.swing.JButton jButtonEliminar;
+    private javax.swing.JButton jButtonRegresar;
     private javax.swing.JComboBox<String> jComboBoxProducto;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel3;
